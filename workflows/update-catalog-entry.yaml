@@ -1,0 +1,552 @@
+apiVersion: harness.io/v1
+kind: Workflow
+name: update-catalog-entry
+identifier: update_catalog_entry
+type: service
+owner: platform_engineering
+orgIdentifier: default
+projectIdentifier: cfg-IDP-project
+icon: scaffolder
+metadata:
+  description: >
+    Add Resources and APIs to your service catalog entry. Supports databases,
+    caches, Kafka, IBM MQ, FTP servers, REST APIs and async APIs — all in one
+    submission. Commits directly to your repo master branch.
+  tags:
+    - catalog
+    - platform
+    - self-service
+
+spec:
+  parameters:
+    - title: Select Service
+      required:
+        - componentIdentifier
+      properties:
+        accountId:
+          title: Account ID
+          type: string
+          default: "ACCOUNT_ID"
+          disabled: true
+
+        componentIdentifier:
+          title: Service Component
+          type: string
+          description: "Select the service you want to update"
+          ui:field: SelectFieldFromApi
+          ui:options:
+            path: proxy/catalog-api/v1/entities?filter=kind=Component
+            valueSelector: identifier
+            labelSelector: metadata.title
+          ui:autofocus: true
+
+        sysid:
+          title: SYSID
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sysid}}"
+
+        systemIdentifier:
+          title: System
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.systemIdentifier}}"
+
+        ownerGroup:
+          title: Owner Group
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.ownerGroup}}"
+
+        repoSlug:
+          title: Repository
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.repoSlug}}"
+
+    - title: System (optional)
+      properties:
+        updateSystem:
+          title: Update System information?
+          type: string
+          enum:
+            - "No"
+            - "Yes"
+          default: "No"
+
+      dependencies:
+        updateSystem:
+          oneOf:
+            - properties:
+                updateSystem:
+                  const: "No"
+            - properties:
+                updateSystem:
+                  const: "Yes"
+                systemTitle:
+                  title: System Title
+                  type: string
+                  description: "Display name — e.g. Payments Platform"
+                  ui:placeholder: "System Title - e.g. Payments Platform"
+                systemDescription:
+                  title: System Description
+                  type: string
+                  ui:widget: textarea
+                  ui:options:
+                    rows: 3
+                  ui:placeholder: "System Description - what does this platform do?"
+                systemDomain:
+                  title: Domain
+                  type: string
+                  enum:
+                    - banking
+                    - lending
+                    - risk
+                    - payments
+                    - operations
+                    - data
+                systemConfluence:
+                  title: Confluence URL
+                  type: string
+                  ui:placeholder: "Confluence URL - https://confluence.bank.com/display/PROJ"
+                systemRunbook:
+                  title: Runbook URL
+                  type: string
+                  ui:placeholder: "Runbook URL - https://runbooks.bank.com/platform-name"
+                systemTags:
+                  title: Tags
+                  type: string
+                  description: "Comma-separated — e.g. payments,tier-1"
+                  ui:placeholder: "Tags - e.g. payments,tier-1"
+              required:
+                - systemTitle
+                - systemDescription
+                - systemDomain
+
+    - title: Resources
+      properties:
+        databases:
+          title: Databases
+          type: array
+          description: "Add one entry per database this service owns"
+          items:
+            type: object
+            required:
+              - name
+              - engine
+              - description
+            properties:
+              name:
+                title: Resource Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-db"
+                ui:placeholder: "Resource Name - e.g. orders-db"
+              engine:
+                title: Engine
+                type: string
+                enum:
+                  - postgresql
+                  - mysql
+                  - oracle
+                  - mssql
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - engine version, hosting, HA setup"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        caches:
+          title: Caches
+          type: array
+          description: "Add one entry per cache this service owns"
+          items:
+            type: object
+            required:
+              - name
+              - engine
+              - description
+            properties:
+              name:
+                title: Resource Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-cache"
+                ui:placeholder: "Resource Name - e.g. orders-cache"
+              engine:
+                title: Engine
+                type: string
+                enum:
+                  - redis
+                  - memcached
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - engine version, hosting, replication"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        kafkaClusters:
+          title: Kafka Clusters
+          type: array
+          description: "Add one entry per Kafka cluster this service owns"
+          items:
+            type: object
+            required:
+              - name
+              - description
+            properties:
+              name:
+                title: Resource Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-kafka"
+                ui:placeholder: "Resource Name - e.g. orders-kafka"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - auth method, management, purpose"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        mqBrokers:
+          title: IBM MQ Brokers
+          type: array
+          description: "Add one entry per IBM MQ broker this service owns"
+          items:
+            type: object
+            required:
+              - name
+              - description
+            properties:
+              name:
+                title: Resource Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-mq"
+                ui:placeholder: "Resource Name - e.g. orders-mq"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - host, port, auth, queues managed"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        ftpServers:
+          title: FTP Servers
+          type: array
+          description: "Add one entry per FTP server this service owns"
+          items:
+            type: object
+            required:
+              - name
+              - description
+            properties:
+              name:
+                title: Resource Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-ftp"
+                ui:placeholder: "Resource Name - e.g. orders-ftp"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - host, protocol, partners, purpose"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+    - title: APIs
+      properties:
+        restApis:
+          title: REST APIs
+          type: array
+          description: "Add one entry per REST API this service exposes"
+          items:
+            type: object
+            required:
+              - name
+              - endpoint
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-rest-api"
+                ui:placeholder: "API Name - e.g. orders-rest-api"
+              endpoint:
+                title: Base URL
+                type: string
+                ui:placeholder: "Base URL - e.g. https://api.bank.com/orders"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - who calls this, auth method, rate limits"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        kafkaProducers:
+          title: Kafka Producers
+          type: array
+          description: "Add one entry per Kafka topic this service publishes to"
+          items:
+            type: object
+            required:
+              - name
+              - topic
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-kafka-producer"
+                ui:placeholder: "API Name - e.g. orders-kafka-producer"
+              topic:
+                title: Topic
+                type: string
+                ui:placeholder: "Topic - e.g. orders.events.order-created"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what events are published and who consumes them"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        kafkaConsumers:
+          title: Kafka Consumers
+          type: array
+          description: "Add one entry per Kafka topic this service subscribes to"
+          items:
+            type: object
+            required:
+              - name
+              - topic
+              - consumerGroup
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-kafka-consumer"
+                ui:placeholder: "API Name - e.g. orders-kafka-consumer"
+              topic:
+                title: Topic
+                type: string
+                ui:placeholder: "Topic - e.g. fraud.events.fraud-decision"
+              consumerGroup:
+                title: Consumer Group
+                type: string
+                ui:placeholder: "Consumer Group - e.g. orders-fraud-consumer"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what topic and what this service does with it"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        mqProducers:
+          title: MQ Producers
+          type: array
+          description: "Add one entry per MQ queue this service publishes to"
+          items:
+            type: object
+            required:
+              - name
+              - queueName
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-mq-producer"
+                ui:placeholder: "API Name - e.g. orders-mq-producer"
+              queueName:
+                title: Queue Name
+                type: string
+                ui:placeholder: "Queue Name - e.g. ORDERS.INSTRUCTIONS.OUTBOUND"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what messages are published and who consumes them"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        mqConsumers:
+          title: MQ Consumers
+          type: array
+          description: "Add one entry per MQ queue this service reads from"
+          items:
+            type: object
+            required:
+              - name
+              - queueName
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-mq-consumer"
+                ui:placeholder: "API Name - e.g. orders-mq-consumer"
+              queueName:
+                title: Queue Name
+                type: string
+                ui:placeholder: "Queue Name - e.g. ORDERS.INSTRUCTIONS.INBOUND"
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what messages are consumed and what drives it"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        ftpOutbound:
+          title: FTP Outbound
+          type: array
+          description: "Add one entry per FTP path this service deposits files to"
+          items:
+            type: object
+            required:
+              - name
+              - path
+              - contentType
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-ftp-outbound"
+                ui:placeholder: "API Name - e.g. orders-ftp-outbound"
+              path:
+                title: FTP Path
+                type: string
+                ui:placeholder: "FTP Path - e.g. /outbound/settlement/{date}"
+              contentType:
+                title: Content Type
+                type: string
+                enum:
+                  - text/csv
+                  - application/xml
+                  - application/json
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what files are deposited, schedule, who picks them up"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+        ftpInbound:
+          title: FTP Inbound
+          type: array
+          description: "Add one entry per FTP path this service reads files from"
+          items:
+            type: object
+            required:
+              - name
+              - path
+              - contentType
+              - description
+            properties:
+              name:
+                title: API Name
+                type: string
+                pattern: "^[a-z][a-z0-9-]+$"
+                description: "kebab-case — e.g. orders-ftp-inbound"
+                ui:placeholder: "API Name - e.g. orders-ftp-inbound"
+              path:
+                title: FTP Path
+                type: string
+                ui:placeholder: "FTP Path - e.g. /inbound/instructions/{date}"
+              contentType:
+                title: Content Type
+                type: string
+                enum:
+                  - text/csv
+                  - application/xml
+                  - application/json
+              description:
+                title: Description
+                type: string
+                ui:placeholder: "Description - what files are read, who deposits them, schedule"
+                ui:widget: textarea
+                ui:options:
+                  rows: 2
+
+  steps:
+    - id: log_inputs
+      name: Log Catalog Update Inputs
+      action: debug.log
+      input:
+        message: >
+          component={{ parameters.componentIdentifier }},
+          sysid={{ parameters.sysid }},
+          system={{ parameters.systemIdentifier }},
+          updateSystem={{ parameters.updateSystem }}
+
+    - id: trigger_pipeline
+      name: Trigger Update Catalog Pipeline
+      action: trigger:harness-custom-pipeline
+      input:
+        pipeline: update_catalog_entry_pipeline
+        payload:
+          componentIdentifier: "{{ parameters.componentIdentifier }}"
+          repoSlug: "{{ parameters.repoSlug }}"
+          sysid: "{{ parameters.sysid }}"
+          systemIdentifier: "{{ parameters.systemIdentifier }}"
+          ownerGroup: "{{ parameters.ownerGroup }}"
+          updateSystem: "{{ parameters.updateSystem }}"
+          systemTitle: "{{ parameters.systemTitle or '' }}"
+          systemDescription: "{{ parameters.systemDescription or '' }}"
+          systemDomain: "{{ parameters.systemDomain or '' }}"
+          systemConfluence: "{{ parameters.systemConfluence or '' }}"
+          systemRunbook: "{{ parameters.systemRunbook or '' }}"
+          systemTags: "{{ parameters.systemTags or '' }}"
+          databases: "{{ parameters.databases | dump }}"
+          caches: "{{ parameters.caches | dump }}"
+          kafkaClusters: "{{ parameters.kafkaClusters | dump }}"
+          mqBrokers: "{{ parameters.mqBrokers | dump }}"
+          ftpServers: "{{ parameters.ftpServers | dump }}"
+          restApis: "{{ parameters.restApis | dump }}"
+          kafkaProducers: "{{ parameters.kafkaProducers | dump }}"
+          kafkaConsumers: "{{ parameters.kafkaConsumers | dump }}"
+          mqProducers: "{{ parameters.mqProducers | dump }}"
+          mqConsumers: "{{ parameters.mqConsumers | dump }}"
+          ftpOutbound: "{{ parameters.ftpOutbound | dump }}"
+          ftpInbound: "{{ parameters.ftpInbound | dump }}"
+          requestorName: "${{ user.entity.metadata.name }}"
+          requestorEmail: "${{ user.entity.spec.profile.email or user.entity.metadata.name }}"
+
+  output:
+    text:
+      title: Catalog Update Submitted
+      content: >
+        Your catalog update has been submitted. The pipeline will append the
+        new entities to your catalog-info.yaml, validate and commit to master.
+        Each new entity will be registered in IDP automatically.
+      summary:
+        component: "{{ parameters.componentIdentifier }}"
+        system: "{{ parameters.systemIdentifier }}"
+        updateSystem: "{{ parameters.updateSystem }}"
+        requestor: "${{ user.entity.metadata.name }}"
+    links:
+      - title: View Pipeline Execution
+        url: "https://app.harness.io/ng/account/{{ parameters.accountId }}/module/idp-admin/orgs/default/projects/cfg-IDP-project/pipelines/update_catalog_entry_pipeline/executions"
