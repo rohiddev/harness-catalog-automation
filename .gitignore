@@ -1,0 +1,10 @@
+# Binaries
+seeder/catalog-seeder
+*.exe
+
+# Secrets
+.env
+*.env
+
+# Build artifacts
+dist/
