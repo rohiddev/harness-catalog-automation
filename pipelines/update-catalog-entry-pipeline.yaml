@@ -1,0 +1,433 @@
+pipeline:
+  name: Update Catalog Entry Pipeline
+  identifier: update_catalog_entry_pipeline
+  orgIdentifier: default
+  projectIdentifier: cfg-IDP-project
+  tags: {}
+  variables:
+    - name: componentIdentifier
+      type: String
+      description: "Component identifier — e.g. payments_service"
+      value: <+trigger.payload.componentIdentifier>
+    - name: repoSlug
+      type: String
+      description: "GitHub repo slug — e.g. bank-org/payments-service"
+      value: <+trigger.payload.repoSlug>
+    - name: sysid
+      type: String
+      description: "ServiceNow SYSID — e.g. SYSID-00000"
+      value: <+trigger.payload.sysid>
+    - name: systemIdentifier
+      type: String
+      description: "Parent system identifier — e.g. payments_platform"
+      value: <+trigger.payload.systemIdentifier>
+    - name: ownerGroup
+      type: String
+      description: "Owner group identifier — e.g. team-payments"
+      value: <+trigger.payload.ownerGroup>
+    - name: updateSystem
+      type: String
+      description: "Yes or No"
+      value: <+trigger.payload.updateSystem>
+    - name: systemTitle
+      type: String
+      description: "System display title"
+      value: <+trigger.payload.systemTitle>
+    - name: systemDescription
+      type: String
+      description: "System description"
+      value: <+trigger.payload.systemDescription>
+    - name: systemDomain
+      type: String
+      description: "System domain"
+      value: <+trigger.payload.systemDomain>
+    - name: systemConfluence
+      type: String
+      description: "Confluence URL"
+      value: <+trigger.payload.systemConfluence>
+    - name: systemRunbook
+      type: String
+      description: "Runbook URL"
+      value: <+trigger.payload.systemRunbook>
+    - name: systemTags
+      type: String
+      description: "Comma-separated tags"
+      value: <+trigger.payload.systemTags>
+    - name: databases
+      type: String
+      description: "JSON array of database entries"
+      value: <+trigger.payload.databases>
+    - name: caches
+      type: String
+      description: "JSON array of cache entries"
+      value: <+trigger.payload.caches>
+    - name: kafkaClusters
+      type: String
+      description: "JSON array of Kafka cluster entries"
+      value: <+trigger.payload.kafkaClusters>
+    - name: mqBrokers
+      type: String
+      description: "JSON array of IBM MQ broker entries"
+      value: <+trigger.payload.mqBrokers>
+    - name: ftpServers
+      type: String
+      description: "JSON array of FTP server entries"
+      value: <+trigger.payload.ftpServers>
+    - name: restApis
+      type: String
+      description: "JSON array of REST API entries"
+      value: <+trigger.payload.restApis>
+    - name: kafkaProducers
+      type: String
+      description: "JSON array of Kafka producer entries"
+      value: <+trigger.payload.kafkaProducers>
+    - name: kafkaConsumers
+      type: String
+      description: "JSON array of Kafka consumer entries"
+      value: <+trigger.payload.kafkaConsumers>
+    - name: mqProducers
+      type: String
+      description: "JSON array of MQ producer entries"
+      value: <+trigger.payload.mqProducers>
+    - name: mqConsumers
+      type: String
+      description: "JSON array of MQ consumer entries"
+      value: <+trigger.payload.mqConsumers>
+    - name: ftpOutbound
+      type: String
+      description: "JSON array of FTP outbound entries"
+      value: <+trigger.payload.ftpOutbound>
+    - name: ftpInbound
+      type: String
+      description: "JSON array of FTP inbound entries"
+      value: <+trigger.payload.ftpInbound>
+    - name: requestorEmail
+      type: String
+      description: "Requestor email for failure notification"
+      value: <+trigger.payload.requestorEmail>
+    - name: requestorName
+      type: String
+      description: "Requestor display name"
+      value: <+trigger.payload.requestorName>
+
+  stages:
+    - stage:
+        name: Clone and Append Catalog
+        identifier: clone_and_append_catalog
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Clone Target Repo
+                  identifier: clone_target_repo
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          GITHUB_PAT=<+secrets.getValue("vault://secret/data/platform/github#pat")>
+                          git config --global user.email "rohid@rohiddev.com"
+                          git config --global user.name "Rohid Dev"
+                          rm -rf /tmp/catalog-update-repo
+                          git clone --retry 3 \
+                            "https://${GITHUB_PAT}@github.com/<+pipeline.variables.repoSlug>.git" \
+                            /tmp/catalog-update-repo
+                          echo "cloned <+pipeline.variables.repoSlug>"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Retry
+                          spec:
+                            retryCount: 2
+                            retryIntervals:
+                              - 30s
+                            onRetryFailure:
+                              action:
+                                type: Abort
+
+              - step:
+                  name: Clone Automation Repo
+                  identifier: clone_automation_repo
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          GITHUB_PAT=<+secrets.getValue("vault://secret/data/platform/github#pat")>
+                          rm -rf /tmp/catalog-automation
+                          git clone --retry 3 \
+                            "https://${GITHUB_PAT}@github.com/rohiddev/harness-catalog-automation.git" \
+                            --branch develop \
+                            /tmp/catalog-automation
+                          echo "cloned harness-catalog-automation"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Retry
+                          spec:
+                            retryCount: 2
+                            retryIntervals:
+                              - 30s
+                            onRetryFailure:
+                              action:
+                                type: Abort
+
+              - step:
+                  name: Create Skeleton If Missing
+                  identifier: create_skeleton_if_missing
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml
+                          if [ ! -f "$CATALOG_FILE" ]; then
+                            echo "catalog-info.yaml not found - creating skeleton"
+                            cat > "$CATALOG_FILE" <<EOF
+                          apiVersion: harness.io/v1
+                          kind: Component
+                          identifier: <+pipeline.variables.componentIdentifier>
+                          name: <+pipeline.variables.componentIdentifier>
+                          type: service
+                          owner: group:account/<+pipeline.variables.ownerGroup>
+                          metadata:
+                            title: <+pipeline.variables.componentIdentifier>
+                            description: >
+                              Update this description via the IDP Update Catalog Entry workflow.
+                            annotations:
+                              bank.com/sysid: <+pipeline.variables.sysid>
+                          spec:
+                            lifecycle: production
+                            system:
+                              - system:account/<+pipeline.variables.systemIdentifier>
+                          EOF
+                            echo "skeleton created"
+                          else
+                            echo "catalog-info.yaml exists - skipping skeleton"
+                          fi
+
+              - step:
+                  name: Append Catalog Entries
+                  identifier: append_catalog_entries
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          cd /tmp/catalog-automation
+
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml \
+                          OWNER_GROUP="<+pipeline.variables.ownerGroup>" \
+                          SYSID="<+pipeline.variables.sysid>" \
+                          SYSTEM_IDENTIFIER="<+pipeline.variables.systemIdentifier>" \
+                          UPDATE_SYSTEM="<+pipeline.variables.updateSystem>" \
+                          SYSTEM_TITLE="<+pipeline.variables.systemTitle>" \
+                          SYSTEM_DESCRIPTION="<+pipeline.variables.systemDescription>" \
+                          SYSTEM_DOMAIN="<+pipeline.variables.systemDomain>" \
+                          SYSTEM_CONFLUENCE="<+pipeline.variables.systemConfluence>" \
+                          SYSTEM_RUNBOOK="<+pipeline.variables.systemRunbook>" \
+                          SYSTEM_TAGS="<+pipeline.variables.systemTags>" \
+                          DATABASES='<+pipeline.variables.databases>' \
+                          CACHES='<+pipeline.variables.caches>' \
+                          KAFKA_CLUSTERS='<+pipeline.variables.kafkaClusters>' \
+                          MQ_BROKERS='<+pipeline.variables.mqBrokers>' \
+                          FTP_SERVERS='<+pipeline.variables.ftpServers>' \
+                          REST_APIS='<+pipeline.variables.restApis>' \
+                          KAFKA_PRODUCERS='<+pipeline.variables.kafkaProducers>' \
+                          KAFKA_CONSUMERS='<+pipeline.variables.kafkaConsumers>' \
+                          MQ_PRODUCERS='<+pipeline.variables.mqProducers>' \
+                          MQ_CONSUMERS='<+pipeline.variables.mqConsumers>' \
+                          FTP_OUTBOUND='<+pipeline.variables.ftpOutbound>' \
+                          FTP_INBOUND='<+pipeline.variables.ftpInbound>' \
+                          go run /tmp/catalog-automation/seeder/appender/main.go
+
+                          echo "append complete"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Abort
+
+              - step:
+                  name: Validate Catalog YAML
+                  identifier: validate_catalog_yaml
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          go run /tmp/catalog-automation/seeder/validator/main.go \
+                            /tmp/catalog-update-repo/catalog-info.yaml
+                          echo "validation passed"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Abort
+
+              - step:
+                  name: Commit and Push to Master
+                  identifier: commit_and_push
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          cd /tmp/catalog-update-repo
+                          git add catalog-info.yaml
+                          git diff --cached --quiet && echo "nothing to commit" && exit 0
+                          git commit -m "chore: update catalog-info.yaml via IDP workflow
+
+                          Component: <+pipeline.variables.componentIdentifier>
+                          Requestor: <+pipeline.variables.requestorName>
+                          SYSID: <+pipeline.variables.sysid>"
+                          git push --retry 3 origin master
+                          echo "pushed to master"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Retry
+                          spec:
+                            retryCount: 2
+                            retryIntervals:
+                              - 30s
+                            onRetryFailure:
+                              action:
+                                type: Abort
+
+    - stage:
+        name: Register Entities in IDP
+        identifier: register_entities
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Register All New Entities
+                  identifier: register_all_entities
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          HARNESS_API_KEY=<+secrets.getValue("vault://secret/data/platform/harness#api_key")>
+                          ACCOUNT_ID=<+account.identifier>
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml
+
+                          # Split multi-doc YAML into individual files
+                          csplit --quiet --prefix=/tmp/catalog-doc- \
+                            --suffix-format="%03d.yaml" \
+                            "$CATALOG_FILE" "/^---/" "{*}" 2>/dev/null || true
+
+                          for doc in /tmp/catalog-doc-*.yaml; do
+                            [ -f "$doc" ] || continue
+                            grep -q "apiVersion:" "$doc" || continue
+
+                            echo "Registering $doc"
+                            HTTP_STATUS=$(curl -s -o /tmp/register-response.json \
+                              -w "%{http_code}" \
+                              --retry 3 --retry-delay 5 --retry-connrefused \
+                              -X POST \
+                              "https://app.harness.io/gateway/idp/api/v1/entities?accountIdentifier=${ACCOUNT_ID}" \
+                              -H "x-api-key: ${HARNESS_API_KEY}" \
+                              -H "Content-Type: application/yaml" \
+                              --data-binary @"$doc")
+
+                            if [ "$HTTP_STATUS" -ge 400 ]; then
+                              echo "WARNING: registration failed for $doc (HTTP $HTTP_STATUS)"
+                              cat /tmp/register-response.json
+                            else
+                              echo "Registered $doc (HTTP $HTTP_STATUS)"
+                            fi
+                          done
+                          echo "registration complete"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+
+    - stage:
+        name: Notify on Failure
+        identifier: notify_on_failure
+        type: Custom
+        when:
+          pipelineStatus: Failure
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: Ignore
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Send Failure Email
+                  identifier: send_failure_email
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          EMAIL_API_KEY=<+secrets.getValue("vault://secret/data/platform/email#api_key")>
+                          curl -s --retry 3 --retry-delay 5 --retry-connrefused \
+                            -X POST https://email.bank.com/send \
+                            -H "Authorization: Bearer ${EMAIL_API_KEY}" \
+                            -H "Content-Type: application/json" \
+                            -d "{
+                              \"to\": \"<+pipeline.variables.requestorEmail>\",
+                              \"subject\": \"Catalog Update Failed - <+pipeline.variables.componentIdentifier>\",
+                              \"body\": \"Your catalog update for <+pipeline.variables.componentIdentifier> failed. Check pipeline: https://app.harness.io/ng/account/<+account.identifier>/module/idp-admin/orgs/default/projects/cfg-IDP-project/pipelines/update_catalog_entry_pipeline/executions\"
+                            }"
+                          echo "failure notification sent"
