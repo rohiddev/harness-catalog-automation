@@ -1,0 +1,203 @@
+<svg width="900" height="790" viewBox="0 0 900 790" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="900" height="790" fill="#ffffff"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="900" height="52" fill="#f8f8f6"/>
+  <rect x="0" y="51" width="900" height="1" fill="#e0dfd8"/>
+  <text x="28" y="32" font-size="16" font-weight="600" fill="#1a1a18">PaaS Namespace Onboarding — Self-Service Flow</text>
+  <rect x="570" y="14" width="118" height="22" rx="11" fill="#faeeda"/>
+  <text x="629" y="29" font-size="11" font-weight="600" fill="#854f0b" text-anchor="middle">~5 min typical</text>
+  <rect x="696" y="14" width="118" height="22" rx="11" fill="#fcebeb"/>
+  <text x="755" y="29" font-size="11" font-weight="600" fill="#791f1f" text-anchor="middle">~40 min (new AD grp)</text>
+  <rect x="822" y="14" width="54" height="22" rx="11" fill="#eaf3de"/>
+  <text x="849" y="29" font-size="11" font-weight="600" fill="#3b6d11" text-anchor="middle">IDP 2.0</text>
+
+  <!-- ─── LEFT PANEL: IDP Form ─── -->
+  <rect x="28" y="70" width="230" height="560" rx="10" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <!-- Form header -->
+  <rect x="28" y="70" width="230" height="42" rx="10" fill="#e6f1fb"/>
+  <rect x="28" y="92" width="230" height="20" fill="#e6f1fb"/>
+  <rect x="28" y="111" width="230" height="1" fill="#b5d4f4"/>
+  <text x="42" y="89" font-size="12" font-weight="600" fill="#0c447c">Developer Request</text>
+  <text x="42" y="106" font-size="10" fill="#185fa5">IDP Self-Service Portal · v2_PaaS_Namespace_Onboarding</text>
+
+  <!-- Instruction strip -->
+  <rect x="28" y="112" width="230" height="22" fill="#f4f9ff"/>
+  <text x="42" y="126" font-size="9" fill="#5f5e5a">Enter SYS ID → App Key auto-populates → Select Cluster</text>
+
+  <!-- SYS ID -->
+  <text x="42" y="148" font-size="10" fill="#888780">SYS ID  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="154" width="202" height="26" rx="5" fill="#f1efe8" stroke="#d3d1c7" stroke-width="0.6"/>
+  <text x="52" y="171" font-size="11" font-weight="500" fill="#2c2c2a">SYSID-06435</text>
+  <text x="42" y="185" font-size="9" fill="#aaa89f">Format: SYSID-##### — type 5-digit number after prefix</text>
+
+  <!-- App Key -->
+  <text x="42" y="200" font-size="10" fill="#888780">App Key  <tspan font-weight="700" fill="#c0392b">*</tspan></text>
+  <rect x="42" y="206" width="202" height="26" rx="5" fill="#f7f6f2" stroke="#d3d1c7" stroke-width="0.6" stroke-dasharray="3 2"/>
+  <text x="52" y="223" font-size="10" fill="#b4b2a9">App Key — Enter a valid SYS ID first…</text>
+  <text x="42" y="237" font-size="9" fill="#aaa89f">Auto-populates from SYS ID</text>
+
+  <!-- Validate AD Groups button -->
+  <rect x="42" y="246" width="134" height="26" rx="5" fill="#3b6d11"/>
+  <text x="109" y="263" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Validate AD Groups</text>
+
+  <!-- App Type -->
+  <text x="42" y="288" font-size="10" fill="#888780">App Type  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="294" width="202" height="26" rx="5" fill="#f1efe8" stroke="#d3d1c7" stroke-width="0.6"/>
+  <text x="52" y="311" font-size="10" fill="#b4b2a9">— Select —</text>
+  <text x="42" y="325" font-size="9" fill="#aaa89f">Select the application type for your namespace</text>
+
+  <!-- Cluster -->
+  <text x="42" y="340" font-size="10" fill="#888780">Cluster  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="346" width="202" height="26" rx="5" fill="#f1efe8" stroke="#d3d1c7" stroke-width="0.6"/>
+  <text x="52" y="363" font-size="10" fill="#b4b2a9">— Select —</text>
+  <text x="42" y="377" font-size="9" fill="#aaa89f">Select your PaaS cluster environment</text>
+
+  <!-- Cluster Zone -->
+  <text x="42" y="392" font-size="10" fill="#888780">Cluster Zone  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="398" width="202" height="26" rx="5" fill="#f7f6f2" stroke="#d3d1c7" stroke-width="0.6" stroke-dasharray="3 2"/>
+  <text x="52" y="415" font-size="10" fill="#b4b2a9">Cluster Zone — Select Cluster first…</text>
+  <text x="42" y="429" font-size="9" fill="#aaa89f">Auto-fills after Cluster selection</text>
+
+  <!-- Active Cluster -->
+  <text x="42" y="444" font-size="10" fill="#888780">Active Cluster  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="450" width="202" height="26" rx="5" fill="#f7f6f2" stroke="#d3d1c7" stroke-width="0.6" stroke-dasharray="3 2"/>
+  <text x="52" y="467" font-size="11" font-weight="500" fill="#2c2c2a">SHARED1</text>
+  <text x="42" y="481" font-size="9" fill="#aaa89f">Active cluster for your namespace — auto-fills</text>
+
+  <!-- App Name -->
+  <text x="42" y="496" font-size="10" fill="#888780">App Name  <tspan font-weight="700" fill="#c0392b">**</tspan></text>
+  <rect x="42" y="502" width="202" height="26" rx="5" fill="#f1efe8" stroke="#d3d1c7" stroke-width="0.6"/>
+  <text x="52" y="519" font-size="10" fill="#b4b2a9">e.g. hoover-payments-api</text>
+
+  <!-- divider -->
+  <line x1="42" y1="538" x2="244" y2="538" stroke="#e0dfd8" stroke-width="0.8"/>
+
+  <!-- Conditional note -->
+  <rect x="42" y="546" width="202" height="36" rx="5" fill="#faeeda"/>
+  <text x="52" y="561" font-size="9" fill="#633806">If AD Groups absent: enter Developer &amp;</text>
+  <text x="52" y="574" font-size="9" font-weight="600" fill="#854f0b">Reviewer members → adds ~35 min wait.</text>
+
+  <!-- Submit -->
+  <rect x="42" y="590" width="202" height="32" rx="6" fill="#e6f1fb" stroke="#185fa5" stroke-width="0.7"/>
+  <text x="143" y="611" font-size="12" font-weight="600" fill="#0c447c" text-anchor="middle">Submit Request →</text>
+
+  <!-- Legend: ** = auto-populates -->
+  <text x="42" y="634" font-size="9" fill="#aaa89f">** field auto-populates or auto-fills based on prior selection</text>
+
+  <!-- Arrow from form to pipeline -->
+  <line x1="258" y1="380" x2="284" y2="380" stroke="#b4b2a9" stroke-width="1.5" marker-end="url(#arr)"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- ─── RIGHT PANEL header ─── -->
+  <text x="295" y="84" font-size="10" font-weight="600" fill="#888780" letter-spacing="0.5">HARNESS PIPELINE — AUTOMATED EXECUTION</text>
+
+  <!-- Vertical connector line -->
+  <line x1="306" y1="104" x2="306" y2="636" stroke="#d3d1c7" stroke-width="1.2" stroke-dasharray="2 3"/>
+
+  <!-- Stage 1 — Validate Input -->
+  <rect x="295" y="98" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="121" r="5" fill="#378add"/>
+  <text x="320" y="117" font-size="12" font-weight="600" fill="#1a1a18">Stage 1 — Validate Input</text>
+  <text x="320" y="133" font-size="11" fill="#5f5e5a">SYS ID format check · App Key lookup · cluster eligibility · conflict detection</text>
+  <rect x="798" y="107" width="56" height="18" rx="3" fill="#e6f1fb"/>
+  <text x="826" y="119" font-size="10" font-weight="600" fill="#185fa5" text-anchor="middle">Validation</text>
+
+  <!-- Stage 2 — Create AD Group (slow path highlight) -->
+  <rect x="295" y="152" width="570" height="46" rx="8" fill="#fffcf5" stroke="#f5d68a" stroke-width="1"/>
+  <circle cx="306" cy="175" r="5" fill="#7f77dd"/>
+  <text x="320" y="171" font-size="12" font-weight="600" fill="#1a1a18">Stage 2 — Create AD Group</text>
+  <text x="320" y="187" font-size="11" fill="#5f5e5a">Check Azure AD · create dso-sysid-developer &amp; reviewer groups if absent</text>
+  <rect x="686" y="161" width="110" height="18" rx="3" fill="#faeeda"/>
+  <text x="741" y="173" font-size="10" font-weight="600" fill="#854f0b" text-anchor="middle">⏱ ~35 min if new</text>
+  <rect x="804" y="161" width="50" height="18" rx="3" fill="#eeedfe"/>
+  <text x="829" y="173" font-size="10" font-weight="600" fill="#534ab7" text-anchor="middle">Identity</text>
+
+  <!-- Stage 3 — Create Teams -->
+  <rect x="295" y="206" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="229" r="5" fill="#7f77dd"/>
+  <text x="320" y="225" font-size="12" font-weight="600" fill="#1a1a18">Stage 3 — Create Teams</text>
+  <text x="320" y="241" font-size="11" fill="#5f5e5a">Provision GitHub teams · link AD groups · sync developer &amp; reviewer membership</text>
+  <rect x="804" y="215" width="50" height="18" rx="3" fill="#eeedfe"/>
+  <text x="829" y="227" font-size="10" font-weight="600" fill="#534ab7" text-anchor="middle">Identity</text>
+
+  <!-- Stage 4 — Create PaaS Repo -->
+  <rect x="295" y="260" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="283" r="5" fill="#1d9e75"/>
+  <text x="320" y="279" font-size="12" font-weight="600" fill="#1a1a18">Stage 4 — Create PaaC Repo  (namespace config)</text>
+  <text x="320" y="295" font-size="11" fill="#5f5e5a">Create repo · inject namespace YAML · apply cluster/zone metadata · attach teams</text>
+  <rect x="790" y="269" width="66" height="18" rx="3" fill="#e1f5ee"/>
+  <text x="823" y="281" font-size="10" font-weight="600" fill="#0f6e56" text-anchor="middle">Provisioning</text>
+
+  <!-- Stage 5 — Trigger Jenkins (namespace) -->
+  <rect x="295" y="314" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="337" r="5" fill="#ba7517"/>
+  <text x="320" y="333" font-size="12" font-weight="600" fill="#1a1a18">Stage 5 — Trigger Jenkins  (namespace creation)</text>
+  <text x="320" y="349" font-size="11" fill="#5f5e5a">Fire Jenkins job · wait for K8s namespace on SHARED1 cluster · confirm healthy</text>
+  <rect x="820" y="323" width="34" height="18" rx="3" fill="#faeeda"/>
+  <text x="837" y="335" font-size="10" font-weight="600" fill="#854f0b" text-anchor="middle">CI</text>
+
+  <!-- Stage 6 — Create Ops Repo -->
+  <rect x="295" y="368" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="391" r="5" fill="#1d9e75"/>
+  <text x="320" y="387" font-size="12" font-weight="600" fill="#1a1a18">Stage 6 — Create Ops Repo in GitHub</text>
+  <text x="320" y="403" font-size="11" fill="#5f5e5a">Create ops repo · inject runbook templates · register webhook · attach teams</text>
+  <rect x="790" y="377" width="66" height="18" rx="3" fill="#e1f5ee"/>
+  <text x="823" y="389" font-size="10" font-weight="600" fill="#0f6e56" text-anchor="middle">Provisioning</text>
+
+  <!-- Stage 7 — Create Jenkins Folder -->
+  <rect x="295" y="422" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="445" r="5" fill="#ba7517"/>
+  <text x="320" y="441" font-size="12" font-weight="600" fill="#1a1a18">Stage 7 — Create Jenkins Folder</text>
+  <text x="320" y="457" font-size="11" fill="#5f5e5a">Provision Jenkins folder for SYSID · seed CI pipelines · assign RBAC permissions</text>
+  <rect x="820" y="431" width="34" height="18" rx="3" fill="#faeeda"/>
+  <text x="837" y="443" font-size="10" font-weight="600" fill="#854f0b" text-anchor="middle">CI</text>
+
+  <!-- Stage 8 — Create Vault Repo -->
+  <rect x="295" y="476" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="499" r="5" fill="#0e6b6b"/>
+  <text x="320" y="495" font-size="12" font-weight="600" fill="#1a1a18">Stage 8 — Create Vault Repo</text>
+  <text x="320" y="511" font-size="11" fill="#5f5e5a">Provision Vault secrets repo · apply namespace path policy · inject base secrets</text>
+  <rect x="816" y="485" width="38" height="18" rx="3" fill="#d9f0f0"/>
+  <text x="835" y="497" font-size="10" font-weight="600" fill="#0e6b6b" text-anchor="middle">Vault</text>
+
+  <!-- Stage 9 — Create Vault Pipeline -->
+  <rect x="295" y="530" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="553" r="5" fill="#0e6b6b"/>
+  <text x="320" y="549" font-size="12" font-weight="600" fill="#1a1a18">Stage 9 — Create Vault Pipeline</text>
+  <text x="320" y="565" font-size="11" fill="#5f5e5a">Configure Harness Vault pipeline · bind namespace · enable secret rotation policy</text>
+  <rect x="816" y="539" width="38" height="18" rx="3" fill="#d9f0f0"/>
+  <text x="835" y="551" font-size="10" font-weight="600" fill="#0e6b6b" text-anchor="middle">Vault</text>
+
+  <!-- Stage 10 — Email Confirmation -->
+  <rect x="295" y="584" width="570" height="46" rx="8" fill="#ffffff" stroke="#e0dfd8" stroke-width="0.8"/>
+  <circle cx="306" cy="607" r="5" fill="#639922"/>
+  <text x="320" y="603" font-size="12" font-weight="600" fill="#1a1a18">Stage 10 — Email Confirmation</text>
+  <text x="320" y="619" font-size="11" fill="#5f5e5a">Requester notified · namespace live · repos &amp; Jenkins ready · Vault active</text>
+  <rect x="824" y="593" width="30" height="18" rx="3" fill="#eaf3de"/>
+  <text x="839" y="605" font-size="10" font-weight="600" fill="#3b6d11" text-anchor="middle">Done</text>
+
+  <!-- ─── ERROR PATH ─── -->
+  <rect x="295" y="646" width="570" height="60" rx="8" fill="#ffffff" stroke="#f09595" stroke-width="0.8" stroke-dasharray="4 3"/>
+  <circle cx="320" cy="676" r="12" fill="#fcebeb" stroke="#f7c1c1" stroke-width="0.8"/>
+  <text x="320" y="681" font-size="12" font-weight="700" fill="#791f1f" text-anchor="middle">!</text>
+  <text x="342" y="667" font-size="12" font-weight="600" fill="#791f1f">On any stage failure</text>
+  <text x="342" y="682" font-size="11" fill="#5f5e5a">Self-service team notified immediately with failed stage and reason.</text>
+  <text x="342" y="696" font-size="11" fill="#5f5e5a">Pipeline re-triggers from the failed stage — no restart from scratch.</text>
+  <rect x="700" y="659" width="154" height="20" rx="4" fill="#e6f1fb"/>
+  <text x="777" y="673" font-size="10" font-weight="600" fill="#185fa5" text-anchor="middle">↩ Resume from failed stage</text>
+
+  <!-- ─── SUCCESS BAR ─── -->
+  <rect x="28" y="722" width="844" height="50" rx="8" fill="#eaf3de" stroke="#c0dd97" stroke-width="0.8"/>
+  <circle cx="54" cy="747" r="11" fill="#639922"/>
+  <text x="54" y="751" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">✓</text>
+  <text x="74" y="742" font-size="12" font-weight="600" fill="#3b6d11">Zero manual steps · namespace · repos · Jenkins · Vault all auto-configured</text>
+  <text x="74" y="758" font-size="11" fill="#3b6d11">~5 min (existing AD groups) · ~40 min (new AD groups, Stage 2 wait) · developer self-serves</text>
+
+</svg>
