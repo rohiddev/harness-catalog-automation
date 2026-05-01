@@ -2,7 +2,7 @@ pipeline:
   name: Update Catalog Entry Pipeline
   identifier: update_catalog_entry_pipeline
   orgIdentifier: default
-  projectIdentifier: IDP-project
+  projectIdentifier: xxx-IDP-project
   tags: {}
   variables:
     - name: componentIdentifier
@@ -428,6 +428,6 @@ pipeline:
                             -d "{
                               \"to\": \"<+pipeline.variables.requestorEmail>\",
                               \"subject\": \"Catalog Update Failed - <+pipeline.variables.componentIdentifier>\",
-                              \"body\": \"Your catalog update for <+pipeline.variables.componentIdentifier> failed. Check pipeline: https://app.harness.io/ng/account/<+account.identifier>/module/idp-admin/orgs/default/projects/IDP-project/pipelines/update_catalog_entry_pipeline/executions\"
+                              \"body\": \"Your catalog update for <+pipeline.variables.componentIdentifier> failed. Check pipeline: https://app.harness.io/ng/account/<+account.identifier>/module/idp-admin/orgs/default/projects/xxx-IDP-project/pipelines/update_catalog_entry_pipeline/executions\"
                             }"
                           echo "failure notification sent"
