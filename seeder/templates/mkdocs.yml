@@ -1,0 +1,4 @@
+site_name: {{SERVICE_DISPLAY_NAME}}
+docs_dir: .
+nav:
+  - Home: IDPDoc.md

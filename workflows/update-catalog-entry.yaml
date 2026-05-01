@@ -38,6 +38,11 @@ spec:
             path: proxy/catalog-api/v1/entities?filter=kind=Component
             valueSelector: identifier
             labelSelector: metadata.title
+            setContextData:
+              sysid: metadata.annotations.bank.com/sysid
+              systemIdentifier: spec.system.0
+              ownerGroup: spec.owner
+              repoSlug: metadata.annotations.github.com/project-slug
           ui:autofocus: true
 
         sysid:
