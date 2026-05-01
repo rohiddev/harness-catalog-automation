@@ -5,7 +5,7 @@ identifier: update_catalog_entry
 type: service
 owner: platform_engineering
 orgIdentifier: default
-projectIdentifier: cfg-IDP-project
+projectIdentifier: IDP-project
 icon: scaffolder
 metadata:
   description: >
@@ -554,4 +554,4 @@ spec:
         requestor: "${{ user.entity.metadata.name }}"
     links:
       - title: View Pipeline Execution
-        url: "https://app.harness.io/ng/account/{{ parameters.accountId }}/module/idp-admin/orgs/default/projects/cfg-IDP-project/pipelines/update_catalog_entry_pipeline/executions"
+        url: "https://app.harness.io/ng/account/{{ parameters.accountId }}/module/idp-admin/orgs/default/projects/IDP-project/pipelines/update_catalog_entry_pipeline/executions"

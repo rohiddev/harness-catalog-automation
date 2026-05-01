@@ -2,7 +2,7 @@ pipeline:
   name: Update Catalog Entry Pipeline
   identifier: update_catalog_entry_pipeline
   orgIdentifier: default
-  projectIdentifier: cfg-IDP-project
+  projectIdentifier: IDP-project
   tags: {}
   variables:
     - name: componentIdentifier
@@ -132,8 +132,8 @@ pipeline:
                         script: |
                           set -euo pipefail
                           GITHUB_PAT=<+secrets.getValue("vault://secret/data/platform/github#pat")>
-                          git config --global user.email "rohid@rohiddev.com"
-                          git config --global user.name "Rohid Dev"
+                          git config --global user.email "platform-bot@org.com"
+                          git config --global user.name "Platform Bot"
                           rm -rf /tmp/catalog-update-repo
                           git clone --retry 3 \
                             "https://${GITHUB_PAT}@github.com/<+pipeline.variables.repoSlug>.git" \
@@ -169,7 +169,7 @@ pipeline:
                           GITHUB_PAT=<+secrets.getValue("vault://secret/data/platform/github#pat")>
                           rm -rf /tmp/catalog-automation
                           git clone --retry 3 \
-                            "https://${GITHUB_PAT}@github.com/rohiddev/harness-catalog-automation.git" \
+                            "https://${GITHUB_PAT}@github.com/your-org/harness-catalog-automation.git" \
                             --branch develop \
                             /tmp/catalog-automation
                           echo "cloned harness-catalog-automation"
@@ -428,6 +428,6 @@ pipeline:
                             -d "{
                               \"to\": \"<+pipeline.variables.requestorEmail>\",
                               \"subject\": \"Catalog Update Failed - <+pipeline.variables.componentIdentifier>\",
-                              \"body\": \"Your catalog update for <+pipeline.variables.componentIdentifier> failed. Check pipeline: https://app.harness.io/ng/account/<+account.identifier>/module/idp-admin/orgs/default/projects/cfg-IDP-project/pipelines/update_catalog_entry_pipeline/executions\"
+                              \"body\": \"Your catalog update for <+pipeline.variables.componentIdentifier> failed. Check pipeline: https://app.harness.io/ng/account/<+account.identifier>/module/idp-admin/orgs/default/projects/IDP-project/pipelines/update_catalog_entry_pipeline/executions\"
                             }"
                           echo "failure notification sent"
