@@ -270,6 +270,106 @@ spec:
                 ui:options:
                   rows: 2
 
+    - title: Observability & Quality
+      properties:
+        datadogDashboardUrl:
+          title: Datadog Dashboard URL
+          type: string
+          ui:placeholder: "Datadog Dashboard URL - https://app.datadoghq.com/dashboard/<id>"
+        datadogServiceName:
+          title: Datadog Service Name
+          type: string
+          ui:placeholder: "Datadog Service Name - e.g. loan-app"
+        dynatraceDashboardUrl:
+          title: Dynatrace Dashboard URL
+          type: string
+          ui:placeholder: "Dynatrace Dashboard URL - https://company.live.dynatrace.com/#dashboard;id=<id>"
+        dynatraceEntityId:
+          title: Dynatrace Entity ID
+          type: string
+          ui:placeholder: "Dynatrace Entity ID - e.g. SERVICE-abc123"
+        sonarqubeProjectKey:
+          title: SonarQube Project Key
+          type: string
+          ui:placeholder: "SonarQube Project Key - e.g. loan-app"
+        sonarqubeDashboardUrl:
+          title: SonarQube Dashboard URL
+          type: string
+          ui:placeholder: "SonarQube Dashboard URL - https://sonarqube.company.com/dashboard?id=loan-app"
+        qualityCoverageTarget:
+          title: Coverage Target (%)
+          type: string
+          ui:placeholder: "Coverage Target - e.g. 80"
+        qualityDoraDashboardUrl:
+          title: DORA / SEI Dashboard URL
+          type: string
+          ui:placeholder: "DORA Dashboard URL - link to SEI dashboard for this service"
+
+    - title: On-call & Database Info
+      properties:
+        oncallTeam:
+          title: On-call Team
+          type: string
+          ui:placeholder: "On-call Team - e.g. lending-platform-team"
+        oncallRotationUrl:
+          title: Rotation Schedule URL
+          type: string
+          ui:placeholder: "Rotation Schedule URL - link to PagerDuty or ServiceNow schedule"
+        oncallIncidentsUrl:
+          title: Incident Dashboard URL
+          type: string
+          ui:placeholder: "Incident Dashboard URL - link to ServiceNow or incident view"
+        oncallLastIncidentDate:
+          title: Last Incident Date
+          type: string
+          ui:placeholder: "Last Incident Date - e.g. 2026-04-15"
+        dbEngine:
+          title: Database Engine
+          type: string
+          enum:
+            - ""
+            - postgresql
+            - mysql
+            - oracle
+            - mssql
+            - mongodb
+          enumNames:
+            - "Not applicable"
+            - PostgreSQL
+            - MySQL
+            - Oracle
+            - MSSQL
+            - MongoDB
+          default: ""
+        dbSchema:
+          title: Database Schema
+          type: string
+          ui:placeholder: "Database Schema - e.g. loan_schema"
+        dbDbaRunbookUrl:
+          title: DBA Runbook URL
+          type: string
+          ui:placeholder: "DBA Runbook URL - link to DBA team runbook for this service"
+        dbLastMigration:
+          title: Last Migration Date
+          type: string
+          ui:placeholder: "Last Migration Date - e.g. 2026-04-15"
+        dbBackupPolicy:
+          title: Backup Policy
+          type: string
+          enum:
+            - ""
+            - daily-7d
+            - daily-30d
+            - weekly-90d
+            - none
+          enumNames:
+            - "Not applicable"
+            - Daily - 7 day retention
+            - Daily - 30 day retention
+            - Weekly - 90 day retention
+            - No backup
+          default: ""
+
     - title: APIs
       properties:
         restApis:
@@ -525,6 +625,23 @@ spec:
           systemConfluence: "{{ parameters.systemConfluence or '' }}"
           systemRunbook: "{{ parameters.systemRunbook or '' }}"
           systemTags: "{{ parameters.systemTags or '' }}"
+          datadogDashboardUrl: "{{ parameters.datadogDashboardUrl or '' }}"
+          datadogServiceName: "{{ parameters.datadogServiceName or '' }}"
+          dynatraceDashboardUrl: "{{ parameters.dynatraceDashboardUrl or '' }}"
+          dynatraceEntityId: "{{ parameters.dynatraceEntityId or '' }}"
+          sonarqubeProjectKey: "{{ parameters.sonarqubeProjectKey or '' }}"
+          sonarqubeDashboardUrl: "{{ parameters.sonarqubeDashboardUrl or '' }}"
+          qualityCoverageTarget: "{{ parameters.qualityCoverageTarget or '' }}"
+          qualityDoraDashboardUrl: "{{ parameters.qualityDoraDashboardUrl or '' }}"
+          oncallTeam: "{{ parameters.oncallTeam or '' }}"
+          oncallRotationUrl: "{{ parameters.oncallRotationUrl or '' }}"
+          oncallIncidentsUrl: "{{ parameters.oncallIncidentsUrl or '' }}"
+          oncallLastIncidentDate: "{{ parameters.oncallLastIncidentDate or '' }}"
+          dbEngine: "{{ parameters.dbEngine or '' }}"
+          dbSchema: "{{ parameters.dbSchema or '' }}"
+          dbDbaRunbookUrl: "{{ parameters.dbDbaRunbookUrl or '' }}"
+          dbLastMigration: "{{ parameters.dbLastMigration or '' }}"
+          dbBackupPolicy: "{{ parameters.dbBackupPolicy or '' }}"
           databases: "{{ parameters.databases | dump }}"
           caches: "{{ parameters.caches | dump }}"
           kafkaClusters: "{{ parameters.kafkaClusters | dump }}"
