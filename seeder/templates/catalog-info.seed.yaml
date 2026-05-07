@@ -103,6 +103,14 @@ metadata:
     # CMDB correlation — REQUIRED
     bank.com/sysid: {{SYSID}}
 
+    # ── Auto-written by pipelines — DO NOT fill manually ──────────────────
+    # SBOM signals — written by GitHub Actions on every PR
+    #   sbom/kafka, sbom/database, sbom/mq, sbom/ftp, sbom/api, sbom/last-scan
+    #
+    # Blast radius validation — written nightly by cross-reference pipeline
+    #   blast-radius/last-validated, blast-radius/undeclared-deps, blast-radius/stale-deps
+    # ──────────────────────────────────────────────────────────────────────
+
   tags:
     - {{LANGUAGE}}                          # e.g. java | python | golang | dotnet  (from CMDB or repo scan)
     - {{DOMAIN}}                            # e.g. payments
