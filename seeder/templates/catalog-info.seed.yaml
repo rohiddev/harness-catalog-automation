@@ -66,11 +66,36 @@ metadata:
     # Harness CI/CD
     harness.io/project-url: https://app.harness.io/ng/account/{{ACCOUNT_ID}}/module/ci/orgs/default/projects/{{SYSID}}/pipelines
 
-    # Observability — add dashboard URL via workflow
-    # datadoghq.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
+    # Observability — fill whichever tool your team uses
+    # datadog.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
+    # datadog.com/service-name: {{SERVICE_NAME}}
+    # dynatrace.com/dashboard-url: https://company.live.dynatrace.com/#dashboard;id=<id>
+    # dynatrace.com/entity-id: SERVICE-<id>
 
-    # Code quality — add project key via workflow
+    # Security Scan — add via workflow after first scan
+    # security-scan/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
+    # security-scan/last-scan-date: ""
+    # security-scan/vulnerability-count: ""
+    # security-scan/quality-gate: ""
+
+    # On-call / Incidents — fill with your on-call tooling
+    # oncall/team: {{TEAM_IDENTIFIER}}
+    # oncall/rotation-url: ""
+    # oncall/incidents-url: ""
+    # oncall/last-incident-date: ""
+
+    # Code Quality — SonarQube project key
     # sonarqube.org/project-key: {{SERVICE_NAME}}
+    # sonarqube.org/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
+    # quality/coverage-target: "80"
+    # quality/dora-dashboard-url: ""
+
+    # Database — fill if service owns a database
+    # db/engine: postgresql
+    # db/schema: {{SERVICE_IDENTIFIER}}
+    # db/dba-runbook-url: ""
+    # db/last-migration: ""
+    # db/backup-policy: daily-7d
 
     # Tracking
     jira/project-key: {{JIRA_PROJECT_KEY}}  # e.g. PAY  (from CMDB)

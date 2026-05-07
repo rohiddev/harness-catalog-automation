@@ -1,0 +1,208 @@
+# =============================================================================
+# Catalog Layout — Service Component
+# Applies to: kind: Component, type: service
+#
+# Tabs:
+#   Overview | Observability | Security Scan | On-call / Incidents |
+#   Code Quality | Database | Docs
+#
+# Annotations reference: seeder/templates/catalog-info.seed.yaml
+# =============================================================================
+
+page:
+  name: service-default-layout
+  path: /
+  title: Service
+  tabs:
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Overview — identity, ownership, scorecard
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Overview
+      path: /
+      title: Overview
+      contents:
+        - component: EntityAboutCard
+          gridProps:
+            md: 6
+        - component: EntityOwnershipCard
+          gridProps:
+            md: 6
+        - component: EntityHasApisCard
+          gridProps:
+            md: 12
+        - component: EntityScorecardCard
+          gridProps:
+            md: 12
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Observability — Datadog and Dynatrace, teams fill whichever applies
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Observability
+      path: /observability
+      title: Observability
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Datadog
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["datadog.com/dashboard-url"]>
+                type: link
+              - label: Service Name
+                value: <+metadata.annotations["datadog.com/service-name"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Dynatrace
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["dynatrace.com/dashboard-url"]>
+                type: link
+              - label: Entity ID
+                value: <+metadata.annotations["dynatrace.com/entity-id"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Security Scan — scan results, quality gate, last scan date
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Security Scan
+      path: /security-scan
+      title: Security Scan
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Scan Results
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["security-scan/dashboard-url"]>
+                type: link
+              - label: Quality Gate
+                value: <+metadata.annotations["security-scan/quality-gate"]>
+                type: text
+              - label: Vulnerability Count
+                value: <+metadata.annotations["security-scan/vulnerability-count"]>
+                type: text
+              - label: Last Scan
+                value: <+metadata.annotations["security-scan/last-scan-date"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # On-call / Incidents — rotation, incident history, ServiceNow
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: On-call / Incidents
+      path: /oncall
+      title: On-call / Incidents
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: On-call
+            items:
+              - label: Team
+                value: <+metadata.annotations["oncall/team"]>
+                type: text
+              - label: Rotation Schedule
+                value: <+metadata.annotations["oncall/rotation-url"]>
+                type: link
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Incidents
+            items:
+              - label: Incident Dashboard
+                value: <+metadata.annotations["oncall/incidents-url"]>
+                type: link
+              - label: Last Incident
+                value: <+metadata.annotations["oncall/last-incident-date"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Code Quality — SonarQube, coverage, DORA
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Code Quality
+      path: /code-quality
+      title: Code Quality
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: SonarQube
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["sonarqube.org/dashboard-url"]>
+                type: link
+              - label: Project Key
+                value: <+metadata.annotations["sonarqube.org/project-key"]>
+                type: text
+              - label: Coverage Target
+                value: <+metadata.annotations["quality/coverage-target"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: DORA Metrics
+            items:
+              - label: SEI Dashboard
+                value: <+metadata.annotations["quality/dora-dashboard-url"]>
+                type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Database — engine, schema, DBA runbook, migration history
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Database
+      path: /database
+      title: Database
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Database Info
+            items:
+              - label: Engine
+                value: <+metadata.annotations["db/engine"]>
+                type: text
+              - label: Schema
+                value: <+metadata.annotations["db/schema"]>
+                type: text
+              - label: Backup Policy
+                value: <+metadata.annotations["db/backup-policy"]>
+                type: text
+              - label: Last Migration
+                value: <+metadata.annotations["db/last-migration"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: DBA
+            items:
+              - label: Runbook
+                value: <+metadata.annotations["db/dba-runbook-url"]>
+                type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Docs — TechDocs (MkDocs served from repo)
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Docs
+      path: /docs
+      title: Docs
+      contents:
+        - component: EntityTechdocsContent
+          gridProps:
+            md: 12
