@@ -76,10 +76,7 @@ Rather than relying on a single source, we cross-reference three independent sig
 
 ## Signal 2 — Observability Platform (Datadog or Dynatrace)
 
-**What it is:** Your APM tool already observes every service call happening in production. We query its topology API nightly to extract what actually depends on what.
-
-**Datadog:** queries the APM service dependency API using the service name from the catalog.  
-**Dynatrace:** queries the SmartScape topology API using the entity ID from the catalog.
+**What it is:** Your APM tool already observes every service call happening in production. We query its topology API nightly to extract what actually depends on what. The pipeline works with whichever tool a team has registered in their catalog — Datadog, Dynatrace, or both during a migration period.
 
 **What it detects:**
 - Service A is calling Service B in production (observed from real traffic)
@@ -89,6 +86,70 @@ Rather than relying on a single source, we cross-reference three independent sig
 **Why this matters:** This is ground truth. It does not depend on what teams said. It reflects what is actually running.
 
 **Limitation:** Only covers services instrumented with APM. Legacy batch jobs or EC2 workloads without an agent may not appear.
+
+---
+
+### Full Graph Traversal — Tier-1 and Tier-2 Services
+
+For critical services, the pipeline performs full transitive graph traversal — not just direct dependencies — to produce a complete blast radius picture. The key principle is **pull the full graph once, traverse locally** to avoid rate limit issues.
+
+#### Dynatrace — Bulk Relationship Pull
+
+Dynatrace returns all service relationships in one paginated API call. The pipeline loads the full graph into memory and runs BFS locally — no additional API calls per hop.
+
+```
+GET /api/v2/entities
+    ?entitySelector=type("SERVICE") AND tag("tier:1","tier:2")
+    &fields=fromRelationships,toRelationships
+    &pageSize=500
+```
+
+For a faster result per service, Dynatrace's Davis AI pre-computes impact chains:
+
+```
+GET /api/v2/entities?entitySelector=impacted("SERVICE-abc123")
+```
+
+Returns every entity Dynatrace already knows is affected — essentially a pre-computed blast radius in one call. No traversal code needed.
+
+**API calls for full Tier-1/2 graph:** 1–3 calls total regardless of graph depth.
+
+#### Datadog — Per-Service Pull with Local Traversal
+
+Datadog does not have a single bulk topology call. The pipeline pulls dependencies per Tier-1/2 service, builds an adjacency list in memory, then traverses locally.
+
+```
+GET /api/v1/service_dependencies
+    ?service=loan-app
+    &env=production
+    &start=<7_days_ago>
+    &end=<now>
+```
+
+Repeated for each Tier-1/2 service from the IDP catalog. The pipeline then runs BFS on the in-memory graph — no further API calls per traversal hop.
+
+**API calls for 30 Tier-1/2 services:** ~30 calls — well within Datadog rate limits.
+
+#### Pipeline Logic — Which Tool to Use
+
+The pipeline checks which annotation is present in the catalog and routes accordingly:
+
+```
+if catalog has datadog.com/service-name  → call Datadog APM API
+if catalog has dynatrace.com/entity-id   → call Dynatrace SmartScape API
+if both present                          → call both, compare findings
+if neither present                       → SBOM + CMDB only (flag missing observability)
+```
+
+#### Comparison for Tier-1 Traversal
+
+| | Dynatrace | Datadog |
+|---|---|---|
+| Full graph retrieval | 1–3 API calls (bulk) | 1 call per Tier-1 service |
+| Pre-computed blast radius | Yes — `impacted()` query | No |
+| Rate limit risk | Very low | Low (scoped to Tier-1/2) |
+| DB connection discovery | Auto (OneAgent) | Requires Database Monitoring add-on |
+| Services without agent | Not visible | Not visible |
 
 ---
 
