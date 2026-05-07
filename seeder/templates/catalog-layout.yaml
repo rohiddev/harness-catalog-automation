@@ -3,7 +3,7 @@
 # Applies to: kind: Component, type: service
 #
 # Tabs:
-#   Overview | Observability | Security Scan | On-call / Incidents |
+#   Overview | Blast Radius | Observability | Security Scan | On-call / Incidents |
 #   Code Quality | Database | Docs
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml
@@ -34,6 +34,60 @@ page:
         - component: EntityScorecardCard
           gridProps:
             md: 12
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Blast Radius — dependency graph + validation signal findings
+    # Graph driven by spec.dependsOn in catalog-info.yaml (from CMDB/now.yaml)
+    # Annotation findings written nightly by the cross-reference pipeline
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Blast Radius
+      path: /blast-radius
+      title: Blast Radius
+      contents:
+        - component: EntityCatalogGraphCard
+          gridProps:
+            md: 12
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Validation Status
+            items:
+              - label: Last Validated
+                value: <+metadata.annotations["blast-radius/last-validated"]>
+                type: text
+              - label: Undeclared Dependencies
+                value: <+metadata.annotations["blast-radius/undeclared-deps"]>
+                type: text
+              - label: Stale Declarations
+                value: <+metadata.annotations["blast-radius/stale-deps"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: SBOM Signals
+            items:
+              - label: Kafka
+                value: <+metadata.annotations["sbom/kafka"]>
+                type: text
+              - label: Database
+                value: <+metadata.annotations["sbom/database"]>
+                type: text
+              - label: MQ
+                value: <+metadata.annotations["sbom/mq"]>
+                type: text
+              - label: FTP
+                value: <+metadata.annotations["sbom/ftp"]>
+                type: text
+              - label: API
+                value: <+metadata.annotations["sbom/api"]>
+                type: text
+              - label: Last Scan
+                value: <+metadata.annotations["sbom/last-scan"]>
+                type: text
 
     # ─────────────────────────────────────────────────────────────────────────
     # Observability — Datadog and Dynatrace, teams fill whichever applies
