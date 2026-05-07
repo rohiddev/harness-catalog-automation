@@ -33,6 +33,23 @@ metadata:
   tags:
     - {{DOMAIN}}                           # e.g. payments  (from CMDB business_domain)
     - sysid-{{SYSID_SHORT}}               # e.g. sysid-00000
+  annotations:
+    bank.com/sysid: {{SYSID}}
+
+    # Telemetry — system-level aggregate dashboard (whole platform health)
+    # Teams add one dashboard that covers all components in this system
+    # datadog.com/system-dashboard-url: "https://app.datadoghq.com/dashboard/<id>"
+    # dynatrace.com/system-dashboard-url: "https://company.live.dynatrace.com/#dashboard;id=<id>"
+
+    # On-call — platform-level on-call (who owns the system, not individual components)
+    # oncall/team: {{TEAM_IDENTIFIER}}
+    # oncall/rotation-url: ""
+    # oncall/incidents-url: ""
+
+    # ── Auto-written by pipelines — DO NOT fill manually ──────────────────
+    # Blast radius validation — written nightly by cross-reference pipeline
+    #   blast-radius/last-validated, blast-radius/tier-1-dependents, blast-radius/transitive-count
+
 spec:
   domain: {{DOMAIN}}                       # e.g. banking | lending | risk | payments | operations
 

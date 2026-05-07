@@ -1,0 +1,134 @@
+# =============================================================================
+# Catalog Layout — System
+# Applies to: kind: System
+#
+# Purpose: Platform-owner view of an entire system (e.g. Payments System,
+# Loan Processing System). Shows aggregate health, telemetry, blast radius,
+# and on-call for the platform as a whole — not individual components.
+#
+# Tabs:
+#   Overview | Telemetry | Blast Radius | On-call / Incidents
+#
+# Annotations reference: seeder/templates/catalog-info.seed.yaml (System section)
+# =============================================================================
+
+page:
+  name: system-default-layout
+  path: /
+  title: System
+  tabs:
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Overview — platform identity, owned components, APIs
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Overview
+      path: /
+      title: Overview
+      contents:
+        - component: EntityAboutCard
+          gridProps:
+            md: 6
+        - component: EntityOwnershipCard
+          gridProps:
+            md: 6
+        - component: EntityHasComponentsCard
+          gridProps:
+            md: 12
+        - component: EntityHasApisCard
+          gridProps:
+            md: 12
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Telemetry — system-level aggregate dashboard
+    # One dashboard covering the whole platform — Datadog or Dynatrace
+    # Teams fill whichever observability tool their platform uses
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Telemetry
+      path: /telemetry
+      title: Telemetry
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Datadog
+            items:
+              - label: System Dashboard
+                value: <+metadata.annotations["datadog.com/system-dashboard-url"]>
+                type: link
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Dynatrace
+            items:
+              - label: System Dashboard
+                value: <+metadata.annotations["dynatrace.com/system-dashboard-url"]>
+                type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Blast Radius — full platform dependency graph + validation findings
+    # Graph shows all components in this system and their external dependencies
+    # Annotation findings written nightly by the cross-reference pipeline
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Blast Radius
+      path: /blast-radius
+      title: Blast Radius
+      contents:
+        - component: EntityCatalogGraphCard
+          gridProps:
+            md: 12
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Validation Status
+            items:
+              - label: Last Validated
+                value: <+metadata.annotations["blast-radius/last-validated"]>
+                type: text
+              - label: Tier-1 Dependents
+                value: <+metadata.annotations["blast-radius/tier-1-dependents"]>
+                type: text
+              - label: Transitive Blast Radius
+                value: <+metadata.annotations["blast-radius/transitive-count"]>
+                type: text
+              - label: Undeclared Dependencies
+                value: <+metadata.annotations["blast-radius/undeclared-deps"]>
+                type: text
+              - label: Stale Declarations
+                value: <+metadata.annotations["blast-radius/stale-deps"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # On-call / Incidents — platform-level on-call and incident view
+    # Who owns this system during an incident, not individual component owners
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: On-call / Incidents
+      path: /oncall
+      title: On-call / Incidents
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: On-call
+            items:
+              - label: Platform Team
+                value: <+metadata.annotations["oncall/team"]>
+                type: text
+              - label: Rotation Schedule
+                value: <+metadata.annotations["oncall/rotation-url"]>
+                type: link
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Incidents
+            items:
+              - label: Incident Dashboard
+                value: <+metadata.annotations["oncall/incidents-url"]>
+                type: link
