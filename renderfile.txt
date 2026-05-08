@@ -1,0 +1,40 @@
+Let me read the current workflow and the project memory first.
+
+  Searched for 1 pattern, read 4 files, listed 1 directory (ctrl+o to expand)
+
+⏺ Here's the honest picture:
+
+  Native IDP constraint: type: array renders all items fully inline — no modal, no collapse. There is no native way to replicate Jarvis's summary table + edit modal pattern.
+
+  With 25 items × ~20 fields each = ~500 visible fields — the form works, it's just long.
+
+  ---
+  Practical mitigations:
+
+  1. Split webs and apps onto separate pages
+
+  Put Section B fields on page 2, webs on page 3, apps on page 4. Users deal with one array at a time instead of both on one endless page.
+
+  2. Good defaults reduce real scroll time
+
+  Most fields already have defaults (isBifrost: true, instanceSize: Medium, volumeSize: 40, loadbalancer: None, all booleans false). In practice a user adds a row and only types repositoryName
+  and picks os — the rest is pre-filled. 2-3 rows is fast even if they're fully expanded.
+
+  3. For 25-row testing — pipeline side has no issue
+
+  The pipeline receives webs and apps as JSON arrays regardless of size and passes them straight into the Jarvis POST body. No limit, no extra handling needed. The 25-row concern is purely a form
+   scroll UX issue.
+
+  4. ui:options: collapsible: true — worth a quick test
+
+  RJSF-material-ui supports collapsible array items, but it's not confirmed working in Harness IDP. If it works, each added item would collapse to a title row by default and expand on click —
+  solves the 25-row UX completely.
+
+  ---
+  Recommended build approach:
+
+  - Page 2: Section B top-level fields (applicationName, environment, multiRegionDeployment, etc.)
+  - Page 3: webs array only
+  - Page 4: apps array + isDbTier + submit
+
+  This way 25 web tier rows are on their own page and 25 app tier rows are on their own page — manageable even without collapse.
