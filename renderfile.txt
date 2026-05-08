@@ -38,3 +38,38 @@ Let me read the current workflow and the project memory first.
   - Page 4: apps array + isDbTier + submit
 
   This way 25 web tier rows are on their own page and 25 app tier rows are on their own page — manageable even without collapse.
+
+
+  ====
+   Honest options if collapsible doesn't work:
+
+    Option 1 — Accept it (recommended for now)
+
+    In production, users add 2-3 tiers with mostly default values. They type repositoryName, pick os, done. The long page is a test-only problem — real usage is fast. Ship it, document the known UX
+     gap, revisit if users complain.
+
+    Option 2 — Strip the array down to core fields only
+
+    Move lambda_config and lb_config out of the tier array entirely. Make them a separate page 5 ("Advanced Config") with a text field asking which tier the config applies to. This cuts each inline
+     item from ~20 fields to ~12, halving the scroll length. Trade-off: two-step UX for lambda/LB users.
+
+    Option 3 — Pre-populate tiers from the lookup API response
+
+    If the lookup POST (Call 1) returns existing tier data for the SYSID, use setContextData to store it and try to inject it as array defaults. This means users review/edit pre-filled rows instead
+     of building from scratch. Unconfirmed whether getContextData works as an array default in Harness IDP — would need a test.
+
+    Option 4 — Raise with Harness support
+
+    Log a support ticket requesting collapsible array items. This is a known gap vs Backstage community templates which have had accordion arrays in some plugin implementations. Worth raising — if
+    it ships in a future release it's a zero-cost fix.
+
+    Option 5 — Custom plugin
+
+    Table + modal is achievable as a plugin. Stakeholder said hard no on custom plugins — off the table unless that decision changes.
+
+    ---
+    Recommendation: Ship with Option 1 now. File the Harness support ticket (Option 4) in parallel. If the lookup API returns tier data, prototype Option 3 — it solves the problem cleanly if it
+    works.
+
+
+              ==
