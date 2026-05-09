@@ -28,8 +28,6 @@ metadata:
   description: >
     Managed by {{TEAM_IDENTIFIER}}. Update this description via the IDP
     "Update Catalog Entry" workflow.
-  annotations:
-    bank.com/sysid: {{SYSID}}              # e.g. SYSID-00000  (from CMDB sys_id)
   tags:
     - {{DOMAIN}}                           # e.g. payments  (from CMDB business_domain)
     - sysid-{{SYSID_SHORT}}               # e.g. sysid-00000
@@ -40,6 +38,10 @@ metadata:
     # Teams add one dashboard that covers all components in this system
     # datadog.com/system-dashboard-url: "https://app.datadoghq.com/dashboard/<id>"
     # dynatrace.com/system-dashboard-url: "https://company.live.dynatrace.com/#dashboard;id=<id>"
+
+    # Kubernetes — clusters this platform spans (comma-separated cluster names)
+    # Written by the IDP "Update Catalog Entry" workflow when system info is updated
+    # kubernetes/clusters: ""   # e.g. prod-eks-us-east-1,dr-eks-us-west-2
 
     # On-call — platform-level on-call (who owns the system, not individual components)
     # oncall/team: {{TEAM_IDENTIFIER}}
@@ -83,6 +85,12 @@ metadata:
     # Harness CI/CD
     harness.io/project-url: https://app.harness.io/ng/account/{{ACCOUNT_ID}}/module/ci/orgs/default/projects/{{SYSID}}/pipelines
 
+    # Kubernetes — Backstage Kubernetes plugin (shows live pods/deployments in IDP)
+    # Written by the IDP "Update Catalog Entry" workflow when workloads are declared
+    # backstage.io/kubernetes-id: {{SERVICE_IDENTIFIER}}
+    # backstage.io/kubernetes-label-selector: app.kubernetes.io/name={{SERVICE_NAME}}
+    # backstage.io/kubernetes-namespace: {{SERVICE_IDENTIFIER}}
+
     # Observability — fill whichever tool your team uses
     # datadog.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
     # datadog.com/service-name: {{SERVICE_NAME}}
@@ -106,6 +114,12 @@ metadata:
     # sonarqube.org/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
     # quality/coverage-target: "80"
     # quality/dora-dashboard-url: ""
+
+    # Cloud Cost — populated nightly by cost pipeline (Kubecost + AWS Cost Explorer)
+    # cloud-cost/k8s-monthly: ""          # e.g. "$142.00" — namespace-level K8s spend
+    # cloud-cost/aws-monthly: ""          # e.g. "$890.00" — EC2/RDS/S3 spend for this service
+    # cloud-cost/namespace: ""            # e.g. payments — K8s namespace (matches Kubecost)
+    # cloud-cost/cost-centre: {{TEAM_IDENTIFIER}}
 
     # Database — fill if service owns a database
     # db/engine: postgresql
@@ -145,4 +159,6 @@ spec:
   lifecycle: production                    # production | experimental | deprecated
   system:
     - system:account/{{PLATFORM_IDENTIFIER}}
+  # dependsOn — written by now.yaml pipeline from CMDB cmdb_rel_ci relationships
+  # dependsOn: []
   # Resources and APIs added later via IDP "Update Catalog Entry" workflow

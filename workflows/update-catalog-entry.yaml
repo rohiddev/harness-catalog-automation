@@ -127,6 +127,11 @@ spec:
                   type: string
                   description: "Comma-separated — e.g. payments,tier-1"
                   ui:placeholder: "Tags - e.g. payments,tier-1"
+                systemKubernetesClusters:
+                  title: Kubernetes Clusters
+                  type: string
+                  description: "Comma-separated list of cluster names this platform spans — powers system-level cluster registry"
+                  ui:placeholder: "Kubernetes Clusters - e.g. prod-eks-us-east-1,dr-eks-us-west-2"
               required:
                 - systemTitle
                 - systemDescription
@@ -269,6 +274,41 @@ spec:
                 ui:widget: textarea
                 ui:options:
                   rows: 2
+
+        kubernetesWorkloads:
+          title: Kubernetes Workloads
+          type: array
+          description: "Add one entry per Kubernetes cluster or namespace this service deploys to. Powers the Backstage Kubernetes plugin."
+          items:
+            type: object
+            required:
+              - cluster
+              - namespace
+              - labelSelector
+              - environment
+            properties:
+              cluster:
+                title: Cluster Name
+                type: string
+                description: "EKS cluster or AKS cluster name"
+                ui:placeholder: "Cluster Name - e.g. prod-eks-us-east-1"
+              namespace:
+                title: Namespace
+                type: string
+                ui:placeholder: "Namespace - e.g. payments"
+              labelSelector:
+                title: Label Selector
+                type: string
+                description: "Kubernetes label selector to identify workload pods"
+                ui:placeholder: "Label Selector - e.g. app.kubernetes.io/name=payments-service"
+              environment:
+                title: Environment
+                type: string
+                enum:
+                  - dev
+                  - qa
+                  - prod
+                ui:widget: select
 
     - title: Observability & Quality
       properties:
@@ -654,6 +694,8 @@ spec:
           mqConsumers: "{{ parameters.mqConsumers | dump }}"
           ftpOutbound: "{{ parameters.ftpOutbound | dump }}"
           ftpInbound: "{{ parameters.ftpInbound | dump }}"
+          kubernetesWorkloads: "{{ parameters.kubernetesWorkloads | dump }}"
+          systemKubernetesClusters: "{{ parameters.systemKubernetesClusters or '' }}"
           requestorName: "${{ user.entity.metadata.name }}"
           requestorEmail: "${{ user.entity.spec.profile.email or user.entity.metadata.name }}"
 
