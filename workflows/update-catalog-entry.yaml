@@ -132,10 +132,50 @@ spec:
                   type: string
                   description: "Comma-separated list of cluster names this platform spans — powers system-level cluster registry"
                   ui:placeholder: "Kubernetes Clusters - e.g. prod-eks-us-east-1,dr-eks-us-west-2"
+                systemDatadogDashboardUrl:
+                  title: System Datadog Dashboard URL
+                  type: string
+                  description: "Platform-wide dashboard covering all components in this system"
+                  ui:placeholder: "Datadog Dashboard URL - https://app.datadoghq.com/dashboard/<id>"
+                systemDynatraceDashboardUrl:
+                  title: System Dynatrace Dashboard URL
+                  type: string
+                  ui:placeholder: "Dynatrace Dashboard URL - https://company.live.dynatrace.com/#dashboard;id=<id>"
+                systemOncallTeam:
+                  title: System On-call Team
+                  type: string
+                  ui:placeholder: "On-call Team - e.g. payments-platform-sre"
+                systemOncallRotationUrl:
+                  title: System On-call Rotation URL
+                  type: string
+                  ui:placeholder: "Rotation URL - link to ServiceNow on-call schedule"
+                systemOncallIncidentsUrl:
+                  title: System Incidents URL
+                  type: string
+                  ui:placeholder: "Incidents URL - link to ServiceNow platform incident view"
               required:
                 - systemTitle
                 - systemDescription
                 - systemDomain
+
+    - title: Service Info
+      properties:
+        componentDescription:
+          title: Service Description
+          type: string
+          description: "What this service does — shown on the catalog entity page"
+          ui:widget: textarea
+          ui:options:
+            rows: 3
+          ui:placeholder: "Service Description - e.g. Handles payment processing for retail banking customers"
+        componentConfluenceUrl:
+          title: Confluence URL
+          type: string
+          ui:placeholder: "Confluence URL - https://confluence.bank.com/display/PAY"
+        componentRunbookUrl:
+          title: Runbook URL
+          type: string
+          ui:placeholder: "Runbook URL - https://runbooks.bank.com/payments-service"
 
     - title: Resources
       properties:
@@ -658,6 +698,9 @@ spec:
           sysid: "{{ parameters.sysid }}"
           systemIdentifier: "{{ parameters.systemIdentifier }}"
           ownerGroup: "{{ parameters.ownerGroup }}"
+          componentDescription: "{{ parameters.componentDescription or '' }}"
+          componentConfluenceUrl: "{{ parameters.componentConfluenceUrl or '' }}"
+          componentRunbookUrl: "{{ parameters.componentRunbookUrl or '' }}"
           updateSystem: "{{ parameters.updateSystem }}"
           systemTitle: "{{ parameters.systemTitle or '' }}"
           systemDescription: "{{ parameters.systemDescription or '' }}"
@@ -665,6 +708,11 @@ spec:
           systemConfluence: "{{ parameters.systemConfluence or '' }}"
           systemRunbook: "{{ parameters.systemRunbook or '' }}"
           systemTags: "{{ parameters.systemTags or '' }}"
+          systemDatadogDashboardUrl: "{{ parameters.systemDatadogDashboardUrl or '' }}"
+          systemDynatraceDashboardUrl: "{{ parameters.systemDynatraceDashboardUrl or '' }}"
+          systemOncallTeam: "{{ parameters.systemOncallTeam or '' }}"
+          systemOncallRotationUrl: "{{ parameters.systemOncallRotationUrl or '' }}"
+          systemOncallIncidentsUrl: "{{ parameters.systemOncallIncidentsUrl or '' }}"
           datadogDashboardUrl: "{{ parameters.datadogDashboardUrl or '' }}"
           datadogServiceName: "{{ parameters.datadogServiceName or '' }}"
           dynatraceDashboardUrl: "{{ parameters.dynatraceDashboardUrl or '' }}"
