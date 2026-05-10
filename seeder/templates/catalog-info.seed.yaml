@@ -64,6 +64,10 @@ metadata:
     # Written by the IDP "Update Catalog Entry" workflow when system info is updated
     # kubernetes/clusters: ""   # e.g. prod-eks-us-east-1,dr-eks-us-west-2
 
+    # Rafay — SRE fleet management plugin (system maps to a Rafay project)
+    # Shows all clusters + namespaces in this platform to SRE team
+    # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
+
     # On-call — platform-level on-call (who owns the system, not individual components)
     # oncall/team: {{TEAM_IDENTIFIER}}
     # oncall/rotation-url: ""
@@ -119,6 +123,11 @@ metadata:
     # backstage.io/kubernetes-id: {{SERVICE_IDENTIFIER}}
     # backstage.io/kubernetes-label-selector: app.kubernetes.io/name={{SERVICE_NAME}}
     # backstage.io/kubernetes-namespace: {{SERVICE_IDENTIFIER}}
+
+    # Rafay — SRE namespace + workload management plugin
+    # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
+    # rafay.dev/cluster-name: ""   # primary cluster — e.g. prod-eks-us-east-1
+    # rafay.dev/namespace: {{SERVICE_IDENTIFIER}}
 
     # Observability — fill whichever tool your team uses
     # datadoghq.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
