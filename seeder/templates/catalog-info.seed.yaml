@@ -9,6 +9,25 @@
 # IMPORT ORDER (one entity at a time via IDP UI or auto-discovery):
 #   1. System    — import first if platform does not exist in IDP yet
 #   2. Component — import after System
+#
+# TEMPLATE VARIABLES (resolved by seeder at stamp time):
+#   {{PLATFORM_IDENTIFIER}}   snake_case platform ID         e.g. payments_platform
+#   {{PLATFORM_NAME}}         kebab-case platform name       e.g. payments-platform
+#   {{PLATFORM_DISPLAY_NAME}} human-readable platform name   e.g. Payments Platform
+#   {{SERVICE_IDENTIFIER}}    snake_case service ID          e.g. payments_service
+#   {{SERVICE_NAME}}          kebab-case service name        e.g. payments-service
+#   {{SERVICE_DISPLAY_NAME}}  human-readable service name    e.g. Payments Service
+#   {{TEAM_IDENTIFIER}}       kebab-case team name           e.g. team-payments
+#   {{OWNER_EMAIL}}           team distribution email        e.g. team-payments@bank.com
+#   {{DOMAIN}}                business domain                e.g. payments
+#   {{SYSID}}                 full SYSID string              e.g. SYSID-06534
+#   {{SYSID_SHORT}}           5-digit suffix only            e.g. 06534
+#   {{TIER}}                  service tier                   e.g. tier-1 | tier-2 | tier-3
+#   {{GITHUB_ORG}}            GitHub org name                e.g. bank-org
+#   {{REPO_NAME}}             repository name                e.g. payments-service
+#   {{JIRA_PROJECT_KEY}}      Jira project key               e.g. PAY
+#   {{ACCOUNT_ID}}            Harness account ID             seeder-level config constant
+#   {{LANGUAGE}}              primary language               e.g. java | python | golang | dotnet
 # =============================================================================
 
 
@@ -19,23 +38,25 @@
 # =============================================================================
 apiVersion: harness.io/v1
 kind: System
-identifier: {{PLATFORM_IDENTIFIER}}        # e.g. payments_platform  (snake_case, from CMDB)
-name: {{PLATFORM_NAME}}                    # e.g. payments-platform  (kebab-case, from CMDB)
+identifier: {{PLATFORM_IDENTIFIER}}
+name: {{PLATFORM_NAME}}
 type: system
-owner: group:account/{{TEAM_IDENTIFIER}}   # e.g. group:account/team-payments  (from CMDB assignment_group)
+owner: group:account/{{TEAM_IDENTIFIER}}
 metadata:
-  title: {{PLATFORM_DISPLAY_NAME}}         # e.g. Payments Platform  (from CMDB business_service)
+  title: {{PLATFORM_DISPLAY_NAME}}
   description: >
     Managed by {{TEAM_IDENTIFIER}}. Update this description via the IDP
     "Update Catalog Entry" workflow.
   tags:
-    - {{DOMAIN}}                           # e.g. payments  (from CMDB business_domain)
-    - sysid-{{SYSID_SHORT}}               # e.g. sysid-00000
+    - {{DOMAIN}}
+    - {{TIER}}
+    - sysid-{{SYSID_SHORT}}
   annotations:
     bank.com/sysid: {{SYSID}}
+    bank.com/tier: {{TIER}}                  # tier-1 | tier-2 | tier-3 — from CMDB criticality
+    bank.com/owner-email: {{OWNER_EMAIL}}    # team distribution email — used by blast radius + notification pipelines
 
     # Telemetry — system-level aggregate dashboard (whole platform health)
-    # Teams add one dashboard that covers all components in this system
     # datadog.com/system-dashboard-url: "https://app.datadoghq.com/dashboard/<id>"
     # dynatrace.com/system-dashboard-url: "https://company.live.dynatrace.com/#dashboard;id=<id>"
 
@@ -53,7 +74,7 @@ metadata:
     #   blast-radius/last-validated, blast-radius/tier-1-dependents, blast-radius/transitive-count
 
 spec:
-  domain: {{DOMAIN}}                       # e.g. banking | lending | risk | payments | operations
+  domain: {{DOMAIN}}
 
 ---
 
@@ -64,12 +85,12 @@ spec:
 # =============================================================================
 apiVersion: harness.io/v1
 kind: Component
-identifier: {{SERVICE_IDENTIFIER}}         # e.g. payments_service  (snake_case, matches repo name)
-name: {{SERVICE_NAME}}                     # e.g. payments-service  (kebab-case, matches repo name)
+identifier: {{SERVICE_IDENTIFIER}}
+name: {{SERVICE_NAME}}
 type: service                              # service | library | website | batch-job
-owner: group:account/{{TEAM_IDENTIFIER}}   # e.g. group:account/team-payments
+owner: group:account/{{TEAM_IDENTIFIER}}
 metadata:
-  title: {{SERVICE_DISPLAY_NAME}}          # e.g. Payments Service  (from CMDB)
+  title: {{SERVICE_DISPLAY_NAME}}
   description: >
     Update this description via the IDP "Update Catalog Entry" workflow.
   annotations:
@@ -85,6 +106,14 @@ metadata:
     # Harness CI/CD
     harness.io/project-url: https://app.harness.io/ng/account/{{ACCOUNT_ID}}/module/ci/orgs/default/projects/{{SYSID}}/pipelines
 
+    # CMDB correlation — REQUIRED
+    bank.com/sysid: {{SYSID}}
+    bank.com/tier: {{TIER}}                  # tier-1 | tier-2 | tier-3 — from CMDB criticality
+    bank.com/owner-email: {{OWNER_EMAIL}}    # used by blast radius reports + failure notification pipeline
+
+    # Tracking
+    jira/project-key: {{JIRA_PROJECT_KEY}}
+
     # Kubernetes — Backstage Kubernetes plugin (shows live pods/deployments in IDP)
     # Written by the IDP "Update Catalog Entry" workflow when workloads are declared
     # backstage.io/kubernetes-id: {{SERVICE_IDENTIFIER}}
@@ -97,28 +126,27 @@ metadata:
     # dynatrace.com/dashboard-url: https://company.live.dynatrace.com/#dashboard;id=<id>
     # dynatrace.com/entity-id: SERVICE-<id>
 
-    # Security Scan — add via workflow after first scan
-    # security-scan/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
-    # security-scan/last-scan-date: ""
-    # security-scan/vulnerability-count: ""
-    # security-scan/quality-gate: ""
-
-    # On-call / Incidents — fill with your on-call tooling
-    # oncall/team: {{TEAM_IDENTIFIER}}
-    # oncall/rotation-url: ""
-    # oncall/incidents-url: ""
-    # oncall/last-incident-date: ""
-
-    # Code Quality — SonarQube project key
+    # Code Quality — SonarQube plugin (activates plugin card on entity page)
     # sonarqube.org/project-key: {{SERVICE_NAME}}
     # sonarqube.org/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
     # quality/coverage-target: "80"
     # quality/dora-dashboard-url: ""
 
+    # Security Scan — pipeline-written metrics (shown in EntityAdditionalInfoCard)
+    # security-scan/vulnerability-count: ""  # written by SonarQube/scan pipeline
+    # security-scan/quality-gate: ""         # pass | fail — written by scan pipeline
+    # security-scan/last-scan-date: ""       # written by scan pipeline
+
+    # On-call / Incidents
+    # oncall/team: {{TEAM_IDENTIFIER}}
+    # oncall/rotation-url: ""
+    # oncall/incidents-url: ""
+    # oncall/last-incident-date: ""
+
     # Cloud Cost — populated nightly by cost pipeline (Kubecost + AWS Cost Explorer)
-    # cloud-cost/k8s-monthly: ""          # e.g. "$142.00" — namespace-level K8s spend
-    # cloud-cost/aws-monthly: ""          # e.g. "$890.00" — EC2/RDS/S3 spend for this service
-    # cloud-cost/namespace: ""            # e.g. payments — K8s namespace (matches Kubecost)
+    # cloud-cost/k8s-monthly: ""             # e.g. "$142.00" — namespace-level K8s spend
+    # cloud-cost/aws-monthly: ""             # e.g. "$890.00" — EC2/RDS/S3 spend
+    # cloud-cost/namespace: {{SERVICE_IDENTIFIER}}
     # cloud-cost/cost-centre: {{TEAM_IDENTIFIER}}
 
     # Database — fill if service owns a database
@@ -127,12 +155,6 @@ metadata:
     # db/dba-runbook-url: ""
     # db/last-migration: ""
     # db/backup-policy: daily-7d
-
-    # Tracking
-    jira/project-key: {{JIRA_PROJECT_KEY}}  # e.g. PAY  (from CMDB)
-
-    # CMDB correlation — REQUIRED
-    bank.com/sysid: {{SYSID}}
 
     # ── Auto-written by pipelines — DO NOT fill manually ──────────────────
     # SBOM signals — written by GitHub Actions on every PR
@@ -143,9 +165,10 @@ metadata:
     # ──────────────────────────────────────────────────────────────────────
 
   tags:
-    - {{LANGUAGE}}                          # e.g. java | python | golang | dotnet  (from CMDB or repo scan)
-    - {{DOMAIN}}                            # e.g. payments
-    - sysid-{{SYSID_SHORT}}                # e.g. sysid-00000
+    - {{LANGUAGE}}
+    - {{DOMAIN}}
+    - {{TIER}}
+    - sysid-{{SYSID_SHORT}}
 
   links:
     - url: https://confluence.bank.com/display/{{JIRA_PROJECT_KEY}}
@@ -161,4 +184,5 @@ spec:
     - system:account/{{PLATFORM_IDENTIFIER}}
   # dependsOn — written by now.yaml pipeline from CMDB cmdb_rel_ci relationships
   # dependsOn: []
-  # Resources and APIs added later via IDP "Update Catalog Entry" workflow
+  # providesApis / consumesApis — added via IDP "Update Catalog Entry" workflow
+  # Resources added via IDP "Update Catalog Entry" workflow
