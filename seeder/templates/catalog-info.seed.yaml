@@ -57,7 +57,7 @@ metadata:
     bank.com/owner-email: {{OWNER_EMAIL}}    # team distribution email — used by blast radius + notification pipelines
 
     # Telemetry — system-level aggregate dashboard (whole platform health)
-    # datadog.com/system-dashboard-url: "https://app.datadoghq.com/dashboard/<id>"
+    # datadoghq.com/system-dashboard-url: "https://app.datadoghq.com/dashboard/<id>"
     # dynatrace.com/system-dashboard-url: "https://company.live.dynatrace.com/#dashboard;id=<id>"
 
     # Kubernetes — clusters this platform spans (comma-separated cluster names)
@@ -121,8 +121,8 @@ metadata:
     # backstage.io/kubernetes-namespace: {{SERVICE_IDENTIFIER}}
 
     # Observability — fill whichever tool your team uses
-    # datadog.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
-    # datadog.com/service-name: {{SERVICE_NAME}}
+    # datadoghq.com/dashboard-url: https://app.datadoghq.com/dashboard/<id>
+    # datadoghq.com/service-name: {{SERVICE_NAME}}
     # dynatrace.com/dashboard-url: https://company.live.dynatrace.com/#dashboard;id=<id>
     # dynatrace.com/entity-id: SERVICE-<id>
 
