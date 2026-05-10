@@ -64,8 +64,22 @@ metadata:
     # Written by the IDP "Update Catalog Entry" workflow when system info is updated
     # kubernetes/clusters: ""   # e.g. prod-eks-us-east-1,dr-eks-us-west-2
 
-    # Rafay — SRE fleet management plugin (system maps to a Rafay project)
-    # Shows all clusters + namespaces in this platform to SRE team
+    # Rafay Kubernetes Ops Platform — SRE fleet management
+    # ── AUDIENCE: SRE team, not management. Management value is through Rafay standalone reporting.
+    # ── WHAT SRE SEES IN IDP (System level = Rafay project view):
+    #      - All clusters registered under this project (fleet health, K8s version, node count)
+    #      - All namespaces across clusters — who owns what, resource quotas
+    #      - RBAC summary — who has access to which namespace
+    #      - Workload rollout status across the whole platform
+    # ── MANAGEMENT VALUE (enabled by Rafay, told through standalone reporting):
+    #      - Governance: every namespace created through IDP self-service — no ad-hoc kubectl
+    #      - Cost accountability: every namespace tagged to a team — K8s spend allocated by team
+    #      - Risk: no developer has direct cluster admin — central RBAC, one place to revoke access
+    #      - Standardisation: all clusters on the same blueprint — not 40 teams doing it differently
+    #      - Scale: new service onboarded to K8s in minutes via IDP, not a 2-week infra ticket
+    # ── TO ACTIVATE: IDP Admin → Plugins → Rafay Kubernetes Ops Platform → Enable
+    #      Configure Rafay API endpoint + organisation credentials in IDP admin settings
+    #      Then uncomment the annotation below — plugin wires up automatically
     # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
 
     # On-call — platform-level on-call (who owns the system, not individual components)
@@ -124,7 +138,18 @@ metadata:
     # backstage.io/kubernetes-label-selector: app.kubernetes.io/name={{SERVICE_NAME}}
     # backstage.io/kubernetes-namespace: {{SERVICE_IDENTIFIER}}
 
-    # Rafay — SRE namespace + workload management plugin
+    # Rafay Kubernetes Ops Platform — SRE namespace + workload management
+    # ── AUDIENCE: SRE team. Complements Kubernetes by Spotify (read-only) with operational actions.
+    # ── WHAT SRE SEES IN IDP (Component level = namespace view for this service):
+    #      - Namespace health and resource quota usage (CPU/memory requests vs limits)
+    #      - Workload deployments — replica count, rollout status, last deploy timestamp
+    #      - RBAC — service account bindings for this namespace
+    #      - Self-service actions: request namespace, rotate service account, adjust quotas
+    # ── KUBERNETES BY SPOTIFY vs RAFAY (different tools, same K8s data, different audience):
+    #      Kubernetes by Spotify → developer: live pods, restarts, crash loops (read-only)
+    #      Rafay               → SRE: namespace management, RBAC, workload ops (operational)
+    # ── TO ACTIVATE: enable Rafay plugin in IDP marketplace, configure API credentials,
+    #      then uncomment the three annotations below
     # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
     # rafay.dev/cluster-name: ""   # primary cluster — e.g. prod-eks-us-east-1
     # rafay.dev/namespace: {{SERVICE_IDENTIFIER}}
