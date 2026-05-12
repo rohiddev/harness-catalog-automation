@@ -3,8 +3,8 @@
 # Applies to: kind: Component, type: service
 #
 # Tabs:
-#   Overview | Blast Radius | Observability | Security Scan | On-call / Incidents |
-#   Code Quality | Database | Docs
+#   Overview | Blast Radius | Observability | Security Scan | Wiz | On-call / Incidents |
+#   Code Quality | Database | Kubernetes | Cloud Cost | CI/CD | Docs
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml
 # =============================================================================
@@ -103,10 +103,10 @@ page:
             title: Datadog
             items:
               - label: Dashboard
-                value: <+metadata.annotations["datadog.com/dashboard-url"]>
+                value: <+metadata.annotations["datadoghq.com/dashboard-url"]>
                 type: link
               - label: Service Name
-                value: <+metadata.annotations["datadog.com/service-name"]>
+                value: <+metadata.annotations["datadoghq.com/service-name"]>
                 type: text
 
         - component: EntityAdditionalInfoCard
@@ -135,9 +135,6 @@ page:
           specs:
             title: Scan Results
             items:
-              - label: Dashboard
-                value: <+metadata.annotations["security-scan/dashboard-url"]>
-                type: link
               - label: Quality Gate
                 value: <+metadata.annotations["security-scan/quality-gate"]>
                 type: text
@@ -147,6 +144,40 @@ page:
               - label: Last Scan
                 value: <+metadata.annotations["security-scan/last-scan-date"]>
                 type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Wiz — cloud security posture, issue severity and trend charts
+    # Requires wiz.io/project-id annotation + Wiz plugin configured in app-config.yaml
+    # Plugin by Roadie (open-source): EntityWizIssues, EntityIssuesChart, EntitySeverityChart
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Wiz
+      path: /wiz
+      title: Wiz
+      contents:
+        - component: EntityWizIssues
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntityIssuesWidget
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntityIssuesChart
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntitySeverityChart
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
 
     # ─────────────────────────────────────────────────────────────────────────
     # On-call / Incidents — rotation, incident history, ServiceNow
@@ -249,6 +280,62 @@ page:
               - label: Runbook
                 value: <+metadata.annotations["db/dba-runbook-url"]>
                 type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Kubernetes — live pod health, deployments, restarts (Kubernetes by Spotify)
+    # Powered by backstage.io/kubernetes-id annotation — dev-facing read-only view
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Kubernetes
+      path: /kubernetes
+      title: Kubernetes
+      contents:
+        - component: EntityKubernetesContent
+          gridProps:
+            md: 12
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Cloud Cost — K8s namespace spend (Kubecost) + AWS spend (Cost Explorer)
+    # Written nightly by cost pipeline — cloud-cost/* annotations
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Cloud Cost
+      path: /cloud-cost
+      title: Cloud Cost
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Monthly Spend
+            items:
+              - label: Kubernetes (Kubecost)
+                value: <+metadata.annotations["cloud-cost/k8s-monthly"]>
+                type: text
+              - label: AWS (Cost Explorer)
+                value: <+metadata.annotations["cloud-cost/aws-monthly"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Cost Allocation
+            items:
+              - label: Namespace
+                value: <+metadata.annotations["cloud-cost/namespace"]>
+                type: text
+              - label: Cost Centre
+                value: <+metadata.annotations["cloud-cost/cost-centre"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # CI/CD — Harness pipeline dashboard link
+    # Powered by harness.io/project-url annotation
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: CI/CD
+      path: /ci-cd
+      title: CI/CD
+      contents:
+        - component: EntityHarnessCiCdContent
 
     # ─────────────────────────────────────────────────────────────────────────
     # Docs — TechDocs (MkDocs served from repo)

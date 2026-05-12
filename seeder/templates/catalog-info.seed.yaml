@@ -82,6 +82,10 @@ metadata:
     #      Then uncomment the annotation below — plugin wires up automatically
     # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
 
+    # Wiz — platform-level cloud security posture (aggregate view across all services in this system)
+    # Use a Wiz project that encompasses all cloud resources belonging to this platform
+    # wiz.io/project-id: ""                  # Wiz project ID — platform-scoped, broader than component-level
+
     # On-call — platform-level on-call (who owns the system, not individual components)
     # oncall/team: {{TEAM_IDENTIFIER}}
     # oncall/rotation-url: ""
@@ -166,6 +170,21 @@ metadata:
     # quality/coverage-target: "80"
     # quality/dora-dashboard-url: ""
 
+    # Harness SEI — DORA metrics (deployment frequency, lead time, MTTR, change failure rate)
+    # Uncomment and set project ID once SEI plugin is enabled in IDP Admin → Plugins
+    # harness.io/sei-project-id: {{SYSID}}
+
+    # Wiz — cloud security posture, issue tracking and severity charts (Roadie open-source plugin)
+    # ── ACTIVATES: EntityWizIssues, EntityIssuesWidget, EntityIssuesChart, EntitySeverityChart tabs
+    # ── CONFIG REQUIRED (IDP Admin → Configure → Plugins → app-config.yaml):
+    #      wiz:
+    #        clientId: <vault>
+    #        clientSecret: <vault>
+    #        tokenUrl: https://auth.wiz.io/token
+    #        wizAPIUrl: https://api.<TENANT>.app.wiz.io/graphql   # tenant: us1/us2/eu1/eu2
+    #        dashboardLink: <your-wiz-url>
+    # wiz.io/project-id: ""                  # Wiz project ID — find in Wiz console → Projects
+
     # Security Scan — pipeline-written metrics (shown in EntityAdditionalInfoCard)
     # security-scan/vulnerability-count: ""  # written by SonarQube/scan pipeline
     # security-scan/quality-gate: ""         # pass | fail — written by scan pipeline
@@ -210,6 +229,12 @@ metadata:
       icon: docs
     - url: https://runbooks.bank.com/{{SERVICE_NAME}}
       title: Runbook
+      icon: book
+    - url: https://app.harness.io/ng/account/{{ACCOUNT_ID}}/sei/overview
+      title: SEI Dashboard
+      icon: dashboard
+    - url: https://runbooks.bank.com/{{SERVICE_NAME}}/database
+      title: Database Ops Runbook
       icon: book
 
 spec:

@@ -109,6 +109,122 @@ pipeline:
       type: String
       description: "Requestor display name"
       value: <+trigger.payload.requestorName>
+    - name: componentDescription
+      type: String
+      description: "Service description text"
+      value: <+trigger.payload.componentDescription>
+    - name: componentConfluenceUrl
+      type: String
+      description: "Confluence URL for this service"
+      value: <+trigger.payload.componentConfluenceUrl>
+    - name: componentRunbookUrl
+      type: String
+      description: "Runbook URL for this service"
+      value: <+trigger.payload.componentRunbookUrl>
+    - name: systemDatadogDashboardUrl
+      type: String
+      description: "System-level Datadog dashboard URL"
+      value: <+trigger.payload.systemDatadogDashboardUrl>
+    - name: systemDynatraceDashboardUrl
+      type: String
+      description: "System-level Dynatrace dashboard URL"
+      value: <+trigger.payload.systemDynatraceDashboardUrl>
+    - name: systemOncallTeam
+      type: String
+      description: "Platform on-call team name"
+      value: <+trigger.payload.systemOncallTeam>
+    - name: systemOncallRotationUrl
+      type: String
+      description: "Platform on-call rotation URL"
+      value: <+trigger.payload.systemOncallRotationUrl>
+    - name: systemOncallIncidentsUrl
+      type: String
+      description: "Platform incidents dashboard URL"
+      value: <+trigger.payload.systemOncallIncidentsUrl>
+    - name: systemKubernetesClusters
+      type: String
+      description: "Comma-separated cluster names this platform spans"
+      value: <+trigger.payload.systemKubernetesClusters>
+    - name: datadogDashboardUrl
+      type: String
+      description: "Component-level Datadog dashboard URL"
+      value: <+trigger.payload.datadogDashboardUrl>
+    - name: datadogServiceName
+      type: String
+      description: "Datadog service name"
+      value: <+trigger.payload.datadogServiceName>
+    - name: dynatraceDashboardUrl
+      type: String
+      description: "Component-level Dynatrace dashboard URL"
+      value: <+trigger.payload.dynatraceDashboardUrl>
+    - name: dynatraceEntityId
+      type: String
+      description: "Dynatrace entity ID"
+      value: <+trigger.payload.dynatraceEntityId>
+    - name: sonarqubeProjectKey
+      type: String
+      description: "SonarQube project key"
+      value: <+trigger.payload.sonarqubeProjectKey>
+    - name: sonarqubeDashboardUrl
+      type: String
+      description: "SonarQube dashboard URL"
+      value: <+trigger.payload.sonarqubeDashboardUrl>
+    - name: qualityCoverageTarget
+      type: String
+      description: "Code coverage target percentage"
+      value: <+trigger.payload.qualityCoverageTarget>
+    - name: qualityDoraDashboardUrl
+      type: String
+      description: "DORA / SEI metrics dashboard URL"
+      value: <+trigger.payload.qualityDoraDashboardUrl>
+    - name: oncallTeam
+      type: String
+      description: "Component on-call team"
+      value: <+trigger.payload.oncallTeam>
+    - name: oncallRotationUrl
+      type: String
+      description: "Component on-call rotation URL"
+      value: <+trigger.payload.oncallRotationUrl>
+    - name: oncallIncidentsUrl
+      type: String
+      description: "Component incidents dashboard URL"
+      value: <+trigger.payload.oncallIncidentsUrl>
+    - name: oncallLastIncidentDate
+      type: String
+      description: "Last incident date for this component"
+      value: <+trigger.payload.oncallLastIncidentDate>
+    - name: dbEngine
+      type: String
+      description: "Primary database engine"
+      value: <+trigger.payload.dbEngine>
+    - name: dbSchema
+      type: String
+      description: "Primary database schema name"
+      value: <+trigger.payload.dbSchema>
+    - name: dbDbaRunbookUrl
+      type: String
+      description: "DBA runbook URL"
+      value: <+trigger.payload.dbDbaRunbookUrl>
+    - name: dbLastMigration
+      type: String
+      description: "Date of last database migration"
+      value: <+trigger.payload.dbLastMigration>
+    - name: dbBackupPolicy
+      type: String
+      description: "Database backup policy"
+      value: <+trigger.payload.dbBackupPolicy>
+    - name: kubernetesWorkloads
+      type: String
+      description: "JSON array of Kubernetes workload declarations"
+      value: <+trigger.payload.kubernetesWorkloads>
+    - name: wizProjectId
+      type: String
+      description: "Wiz project ID — activates cloud security posture cards"
+      value: <+trigger.payload.wizProjectId>
+    - name: systemWizProjectId
+      type: String
+      description: "Platform-scoped Wiz project ID for System entity"
+      value: <+trigger.payload.systemWizProjectId>
 
   stages:
     - stage:
@@ -135,7 +251,7 @@ pipeline:
                           git config --global user.email "platform-bot@org.com"
                           git config --global user.name "Platform Bot"
                           rm -rf /tmp/catalog-update-repo
-                          git clone --retry 3 \
+                          git clone \
                             "https://${GITHUB_PAT}@github.com/<+pipeline.variables.repoSlug>.git" \
                             /tmp/catalog-update-repo
                           echo "cloned <+pipeline.variables.repoSlug>"
@@ -168,7 +284,7 @@ pipeline:
                           set -euo pipefail
                           GITHUB_PAT=<+secrets.getValue("vault://secret/data/platform/github#pat")>
                           rm -rf /tmp/catalog-automation
-                          git clone --retry 3 \
+                          git clone \
                             "https://${GITHUB_PAT}@github.com/your-org/harness-catalog-automation.git" \
                             --branch develop \
                             /tmp/catalog-automation
@@ -188,8 +304,8 @@ pipeline:
                                 type: Abort
 
               - step:
-                  name: Create Skeleton If Missing
-                  identifier: create_skeleton_if_missing
+                  name: Install Go Dependencies
+                  identifier: install_go_dependencies
                   type: ShellScript
                   spec:
                     shell: Bash
@@ -200,9 +316,36 @@ pipeline:
                       spec:
                         script: |
                           set -euo pipefail
+                          export GOPATH=/tmp/go-cache
+                          export GOCACHE=/tmp/go-build-cache
+                          mkdir -p "${GOPATH}" "${GOCACHE}"
+                          cd /tmp/catalog-automation
+                          go mod tidy
+                          echo "go dependencies ready"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Abort
+
+              - step:
+                  name: Update Develop Branch
+                  identifier: update_develop_branch
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          cd /tmp/catalog-update-repo
+                          git checkout develop 2>/dev/null || git checkout -b develop
                           CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml
                           if [ ! -f "$CATALOG_FILE" ]; then
-                            echo "catalog-info.yaml not found - creating skeleton"
                             cat > "$CATALOG_FILE" <<EOF
                           apiVersion: harness.io/v1
                           kind: Component
@@ -216,32 +359,16 @@ pipeline:
                               Update this description via the IDP Update Catalog Entry workflow.
                             annotations:
                               bank.com/sysid: <+pipeline.variables.sysid>
+                              github.com/project-slug: <+pipeline.variables.repoSlug>
                           spec:
                             lifecycle: production
                             system:
                               - system:account/<+pipeline.variables.systemIdentifier>
                           EOF
-                            echo "skeleton created"
-                          else
-                            echo "catalog-info.yaml exists - skipping skeleton"
                           fi
-
-              - step:
-                  name: Append Catalog Entries
-                  identifier: append_catalog_entries
-                  type: ShellScript
-                  spec:
-                    shell: Bash
-                    delegateSelectors:
-                      - act-delegate-k8s-ephub-p2r1
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          set -euo pipefail
                           cd /tmp/catalog-automation
-
                           CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml \
+                          TARGET_ENV="dev" \
                           OWNER_GROUP="<+pipeline.variables.ownerGroup>" \
                           SYSID="<+pipeline.variables.sysid>" \
                           SYSTEM_IDENTIFIER="<+pipeline.variables.systemIdentifier>" \
@@ -264,42 +391,63 @@ pipeline:
                           MQ_CONSUMERS='<+pipeline.variables.mqConsumers>' \
                           FTP_OUTBOUND='<+pipeline.variables.ftpOutbound>' \
                           FTP_INBOUND='<+pipeline.variables.ftpInbound>' \
+                          COMPONENT_DESCRIPTION="<+pipeline.variables.componentDescription>" \
+                          COMPONENT_CONFLUENCE_URL="<+pipeline.variables.componentConfluenceUrl>" \
+                          COMPONENT_RUNBOOK_URL="<+pipeline.variables.componentRunbookUrl>" \
+                          SYSTEM_DATADOG_DASHBOARD_URL="<+pipeline.variables.systemDatadogDashboardUrl>" \
+                          SYSTEM_DYNATRACE_DASHBOARD_URL="<+pipeline.variables.systemDynatraceDashboardUrl>" \
+                          SYSTEM_ONCALL_TEAM="<+pipeline.variables.systemOncallTeam>" \
+                          SYSTEM_ONCALL_ROTATION_URL="<+pipeline.variables.systemOncallRotationUrl>" \
+                          SYSTEM_ONCALL_INCIDENTS_URL="<+pipeline.variables.systemOncallIncidentsUrl>" \
+                          SYSTEM_KUBERNETES_CLUSTERS="<+pipeline.variables.systemKubernetesClusters>" \
+                          DATADOG_DASHBOARD_URL="<+pipeline.variables.datadogDashboardUrl>" \
+                          DATADOG_SERVICE_NAME="<+pipeline.variables.datadogServiceName>" \
+                          DYNATRACE_DASHBOARD_URL="<+pipeline.variables.dynatraceDashboardUrl>" \
+                          DYNATRACE_ENTITY_ID="<+pipeline.variables.dynatraceEntityId>" \
+                          SONARQUBE_PROJECT_KEY="<+pipeline.variables.sonarqubeProjectKey>" \
+                          SONARQUBE_DASHBOARD_URL="<+pipeline.variables.sonarqubeDashboardUrl>" \
+                          QUALITY_COVERAGE_TARGET="<+pipeline.variables.qualityCoverageTarget>" \
+                          QUALITY_DORA_DASHBOARD_URL="<+pipeline.variables.qualityDoraDashboardUrl>" \
+                          ONCALL_TEAM="<+pipeline.variables.oncallTeam>" \
+                          ONCALL_ROTATION_URL="<+pipeline.variables.oncallRotationUrl>" \
+                          ONCALL_INCIDENTS_URL="<+pipeline.variables.oncallIncidentsUrl>" \
+                          ONCALL_LAST_INCIDENT_DATE="<+pipeline.variables.oncallLastIncidentDate>" \
+                          DB_ENGINE="<+pipeline.variables.dbEngine>" \
+                          DB_SCHEMA="<+pipeline.variables.dbSchema>" \
+                          DB_DBA_RUNBOOK_URL="<+pipeline.variables.dbDbaRunbookUrl>" \
+                          DB_LAST_MIGRATION="<+pipeline.variables.dbLastMigration>" \
+                          DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
+                          KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
+                          WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          GOPATH=/tmp/go-cache \
+                          GOCACHE=/tmp/go-build-cache \
                           go run /tmp/catalog-automation/seeder/appender/main.go
-
-                          echo "append complete"
-                  failureStrategies:
-                    - onFailure:
-                        errors:
-                          - AllErrors
-                        action:
-                          type: Abort
-
-              - step:
-                  name: Validate Catalog YAML
-                  identifier: validate_catalog_yaml
-                  type: ShellScript
-                  spec:
-                    shell: Bash
-                    delegateSelectors:
-                      - act-delegate-k8s-ephub-p2r1
-                    source:
-                      type: Inline
-                      spec:
-                        script: |
-                          set -euo pipefail
+                          export GOPATH=/tmp/go-cache
+                          export GOCACHE=/tmp/go-build-cache
                           go run /tmp/catalog-automation/seeder/validator/main.go \
                             /tmp/catalog-update-repo/catalog-info.yaml
-                          echo "validation passed"
+                          cd /tmp/catalog-update-repo
+                          git add catalog-info.yaml
+                          git diff --cached --quiet && echo "nothing to commit on develop" && exit 0
+                          git commit -m "chore: update catalog-info.yaml via IDP workflow
+
+                          Component: <+pipeline.variables.componentIdentifier>
+                          Requestor: <+pipeline.variables.requestorName>
+                          SYSID: <+pipeline.variables.sysid>
+                          Branch: develop"
+                          git push -u origin develop
+                          echo "pushed to develop"
                   failureStrategies:
                     - onFailure:
                         errors:
                           - AllErrors
                         action:
-                          type: Abort
+                          type: Ignore
 
               - step:
-                  name: Commit and Push to Master
-                  identifier: commit_and_push
+                  name: Update QA Branch
+                  identifier: update_qa_branch
                   type: ShellScript
                   spec:
                     shell: Bash
@@ -311,14 +459,216 @@ pipeline:
                         script: |
                           set -euo pipefail
                           cd /tmp/catalog-update-repo
-                          git add catalog-info.yaml mkdocs.yml IDPDoc.md
-                          git diff --cached --quiet && echo "nothing to commit" && exit 0
+                          git checkout qa 2>/dev/null || git checkout -b qa
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml
+                          if [ ! -f "$CATALOG_FILE" ]; then
+                            cat > "$CATALOG_FILE" <<EOF
+                          apiVersion: harness.io/v1
+                          kind: Component
+                          identifier: <+pipeline.variables.componentIdentifier>
+                          name: <+pipeline.variables.componentIdentifier>
+                          type: service
+                          owner: group:account/<+pipeline.variables.ownerGroup>
+                          metadata:
+                            title: <+pipeline.variables.componentIdentifier>
+                            description: >
+                              Update this description via the IDP Update Catalog Entry workflow.
+                            annotations:
+                              bank.com/sysid: <+pipeline.variables.sysid>
+                              github.com/project-slug: <+pipeline.variables.repoSlug>
+                          spec:
+                            lifecycle: production
+                            system:
+                              - system:account/<+pipeline.variables.systemIdentifier>
+                          EOF
+                          fi
+                          cd /tmp/catalog-automation
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml \
+                          TARGET_ENV="qa" \
+                          OWNER_GROUP="<+pipeline.variables.ownerGroup>" \
+                          SYSID="<+pipeline.variables.sysid>" \
+                          SYSTEM_IDENTIFIER="<+pipeline.variables.systemIdentifier>" \
+                          UPDATE_SYSTEM="<+pipeline.variables.updateSystem>" \
+                          SYSTEM_TITLE="<+pipeline.variables.systemTitle>" \
+                          SYSTEM_DESCRIPTION="<+pipeline.variables.systemDescription>" \
+                          SYSTEM_DOMAIN="<+pipeline.variables.systemDomain>" \
+                          SYSTEM_CONFLUENCE="<+pipeline.variables.systemConfluence>" \
+                          SYSTEM_RUNBOOK="<+pipeline.variables.systemRunbook>" \
+                          SYSTEM_TAGS="<+pipeline.variables.systemTags>" \
+                          DATABASES='<+pipeline.variables.databases>' \
+                          CACHES='<+pipeline.variables.caches>' \
+                          KAFKA_CLUSTERS='<+pipeline.variables.kafkaClusters>' \
+                          MQ_BROKERS='<+pipeline.variables.mqBrokers>' \
+                          FTP_SERVERS='<+pipeline.variables.ftpServers>' \
+                          REST_APIS='<+pipeline.variables.restApis>' \
+                          KAFKA_PRODUCERS='<+pipeline.variables.kafkaProducers>' \
+                          KAFKA_CONSUMERS='<+pipeline.variables.kafkaConsumers>' \
+                          MQ_PRODUCERS='<+pipeline.variables.mqProducers>' \
+                          MQ_CONSUMERS='<+pipeline.variables.mqConsumers>' \
+                          FTP_OUTBOUND='<+pipeline.variables.ftpOutbound>' \
+                          FTP_INBOUND='<+pipeline.variables.ftpInbound>' \
+                          COMPONENT_DESCRIPTION="<+pipeline.variables.componentDescription>" \
+                          COMPONENT_CONFLUENCE_URL="<+pipeline.variables.componentConfluenceUrl>" \
+                          COMPONENT_RUNBOOK_URL="<+pipeline.variables.componentRunbookUrl>" \
+                          SYSTEM_DATADOG_DASHBOARD_URL="<+pipeline.variables.systemDatadogDashboardUrl>" \
+                          SYSTEM_DYNATRACE_DASHBOARD_URL="<+pipeline.variables.systemDynatraceDashboardUrl>" \
+                          SYSTEM_ONCALL_TEAM="<+pipeline.variables.systemOncallTeam>" \
+                          SYSTEM_ONCALL_ROTATION_URL="<+pipeline.variables.systemOncallRotationUrl>" \
+                          SYSTEM_ONCALL_INCIDENTS_URL="<+pipeline.variables.systemOncallIncidentsUrl>" \
+                          SYSTEM_KUBERNETES_CLUSTERS="<+pipeline.variables.systemKubernetesClusters>" \
+                          DATADOG_DASHBOARD_URL="<+pipeline.variables.datadogDashboardUrl>" \
+                          DATADOG_SERVICE_NAME="<+pipeline.variables.datadogServiceName>" \
+                          DYNATRACE_DASHBOARD_URL="<+pipeline.variables.dynatraceDashboardUrl>" \
+                          DYNATRACE_ENTITY_ID="<+pipeline.variables.dynatraceEntityId>" \
+                          SONARQUBE_PROJECT_KEY="<+pipeline.variables.sonarqubeProjectKey>" \
+                          SONARQUBE_DASHBOARD_URL="<+pipeline.variables.sonarqubeDashboardUrl>" \
+                          QUALITY_COVERAGE_TARGET="<+pipeline.variables.qualityCoverageTarget>" \
+                          QUALITY_DORA_DASHBOARD_URL="<+pipeline.variables.qualityDoraDashboardUrl>" \
+                          ONCALL_TEAM="<+pipeline.variables.oncallTeam>" \
+                          ONCALL_ROTATION_URL="<+pipeline.variables.oncallRotationUrl>" \
+                          ONCALL_INCIDENTS_URL="<+pipeline.variables.oncallIncidentsUrl>" \
+                          ONCALL_LAST_INCIDENT_DATE="<+pipeline.variables.oncallLastIncidentDate>" \
+                          DB_ENGINE="<+pipeline.variables.dbEngine>" \
+                          DB_SCHEMA="<+pipeline.variables.dbSchema>" \
+                          DB_DBA_RUNBOOK_URL="<+pipeline.variables.dbDbaRunbookUrl>" \
+                          DB_LAST_MIGRATION="<+pipeline.variables.dbLastMigration>" \
+                          DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
+                          KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
+                          WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          GOPATH=/tmp/go-cache \
+                          GOCACHE=/tmp/go-build-cache \
+                          go run /tmp/catalog-automation/seeder/appender/main.go
+                          export GOPATH=/tmp/go-cache
+                          export GOCACHE=/tmp/go-build-cache
+                          go run /tmp/catalog-automation/seeder/validator/main.go \
+                            /tmp/catalog-update-repo/catalog-info.yaml
+                          cd /tmp/catalog-update-repo
+                          git add catalog-info.yaml
+                          git diff --cached --quiet && echo "nothing to commit on qa" && exit 0
                           git commit -m "chore: update catalog-info.yaml via IDP workflow
 
                           Component: <+pipeline.variables.componentIdentifier>
                           Requestor: <+pipeline.variables.requestorName>
-                          SYSID: <+pipeline.variables.sysid>"
-                          git push --retry 3 origin master
+                          SYSID: <+pipeline.variables.sysid>
+                          Branch: qa"
+                          git push -u origin qa
+                          echo "pushed to qa"
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+
+              - step:
+                  name: Update Master Branch
+                  identifier: update_master_branch
+                  type: ShellScript
+                  spec:
+                    shell: Bash
+                    delegateSelectors:
+                      - act-delegate-k8s-ephub-p2r1
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          set -euo pipefail
+                          cd /tmp/catalog-update-repo
+                          git checkout master
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml
+                          if [ ! -f "$CATALOG_FILE" ]; then
+                            cat > "$CATALOG_FILE" <<EOF
+                          apiVersion: harness.io/v1
+                          kind: Component
+                          identifier: <+pipeline.variables.componentIdentifier>
+                          name: <+pipeline.variables.componentIdentifier>
+                          type: service
+                          owner: group:account/<+pipeline.variables.ownerGroup>
+                          metadata:
+                            title: <+pipeline.variables.componentIdentifier>
+                            description: >
+                              Update this description via the IDP Update Catalog Entry workflow.
+                            annotations:
+                              bank.com/sysid: <+pipeline.variables.sysid>
+                              github.com/project-slug: <+pipeline.variables.repoSlug>
+                          spec:
+                            lifecycle: production
+                            system:
+                              - system:account/<+pipeline.variables.systemIdentifier>
+                          EOF
+                          fi
+                          cd /tmp/catalog-automation
+                          CATALOG_FILE=/tmp/catalog-update-repo/catalog-info.yaml \
+                          TARGET_ENV="prod" \
+                          OWNER_GROUP="<+pipeline.variables.ownerGroup>" \
+                          SYSID="<+pipeline.variables.sysid>" \
+                          SYSTEM_IDENTIFIER="<+pipeline.variables.systemIdentifier>" \
+                          UPDATE_SYSTEM="<+pipeline.variables.updateSystem>" \
+                          SYSTEM_TITLE="<+pipeline.variables.systemTitle>" \
+                          SYSTEM_DESCRIPTION="<+pipeline.variables.systemDescription>" \
+                          SYSTEM_DOMAIN="<+pipeline.variables.systemDomain>" \
+                          SYSTEM_CONFLUENCE="<+pipeline.variables.systemConfluence>" \
+                          SYSTEM_RUNBOOK="<+pipeline.variables.systemRunbook>" \
+                          SYSTEM_TAGS="<+pipeline.variables.systemTags>" \
+                          DATABASES='<+pipeline.variables.databases>' \
+                          CACHES='<+pipeline.variables.caches>' \
+                          KAFKA_CLUSTERS='<+pipeline.variables.kafkaClusters>' \
+                          MQ_BROKERS='<+pipeline.variables.mqBrokers>' \
+                          FTP_SERVERS='<+pipeline.variables.ftpServers>' \
+                          REST_APIS='<+pipeline.variables.restApis>' \
+                          KAFKA_PRODUCERS='<+pipeline.variables.kafkaProducers>' \
+                          KAFKA_CONSUMERS='<+pipeline.variables.kafkaConsumers>' \
+                          MQ_PRODUCERS='<+pipeline.variables.mqProducers>' \
+                          MQ_CONSUMERS='<+pipeline.variables.mqConsumers>' \
+                          FTP_OUTBOUND='<+pipeline.variables.ftpOutbound>' \
+                          FTP_INBOUND='<+pipeline.variables.ftpInbound>' \
+                          COMPONENT_DESCRIPTION="<+pipeline.variables.componentDescription>" \
+                          COMPONENT_CONFLUENCE_URL="<+pipeline.variables.componentConfluenceUrl>" \
+                          COMPONENT_RUNBOOK_URL="<+pipeline.variables.componentRunbookUrl>" \
+                          SYSTEM_DATADOG_DASHBOARD_URL="<+pipeline.variables.systemDatadogDashboardUrl>" \
+                          SYSTEM_DYNATRACE_DASHBOARD_URL="<+pipeline.variables.systemDynatraceDashboardUrl>" \
+                          SYSTEM_ONCALL_TEAM="<+pipeline.variables.systemOncallTeam>" \
+                          SYSTEM_ONCALL_ROTATION_URL="<+pipeline.variables.systemOncallRotationUrl>" \
+                          SYSTEM_ONCALL_INCIDENTS_URL="<+pipeline.variables.systemOncallIncidentsUrl>" \
+                          SYSTEM_KUBERNETES_CLUSTERS="<+pipeline.variables.systemKubernetesClusters>" \
+                          DATADOG_DASHBOARD_URL="<+pipeline.variables.datadogDashboardUrl>" \
+                          DATADOG_SERVICE_NAME="<+pipeline.variables.datadogServiceName>" \
+                          DYNATRACE_DASHBOARD_URL="<+pipeline.variables.dynatraceDashboardUrl>" \
+                          DYNATRACE_ENTITY_ID="<+pipeline.variables.dynatraceEntityId>" \
+                          SONARQUBE_PROJECT_KEY="<+pipeline.variables.sonarqubeProjectKey>" \
+                          SONARQUBE_DASHBOARD_URL="<+pipeline.variables.sonarqubeDashboardUrl>" \
+                          QUALITY_COVERAGE_TARGET="<+pipeline.variables.qualityCoverageTarget>" \
+                          QUALITY_DORA_DASHBOARD_URL="<+pipeline.variables.qualityDoraDashboardUrl>" \
+                          ONCALL_TEAM="<+pipeline.variables.oncallTeam>" \
+                          ONCALL_ROTATION_URL="<+pipeline.variables.oncallRotationUrl>" \
+                          ONCALL_INCIDENTS_URL="<+pipeline.variables.oncallIncidentsUrl>" \
+                          ONCALL_LAST_INCIDENT_DATE="<+pipeline.variables.oncallLastIncidentDate>" \
+                          DB_ENGINE="<+pipeline.variables.dbEngine>" \
+                          DB_SCHEMA="<+pipeline.variables.dbSchema>" \
+                          DB_DBA_RUNBOOK_URL="<+pipeline.variables.dbDbaRunbookUrl>" \
+                          DB_LAST_MIGRATION="<+pipeline.variables.dbLastMigration>" \
+                          DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
+                          KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
+                          WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          GOPATH=/tmp/go-cache \
+                          GOCACHE=/tmp/go-build-cache \
+                          go run /tmp/catalog-automation/seeder/appender/main.go
+                          export GOPATH=/tmp/go-cache
+                          export GOCACHE=/tmp/go-build-cache
+                          go run /tmp/catalog-automation/seeder/validator/main.go \
+                            /tmp/catalog-update-repo/catalog-info.yaml
+                          cd /tmp/catalog-update-repo
+                          git add catalog-info.yaml
+                          git diff --cached --quiet && echo "nothing to commit on master" && exit 0
+                          git commit -m "chore: update catalog-info.yaml via IDP workflow
+
+                          Component: <+pipeline.variables.componentIdentifier>
+                          Requestor: <+pipeline.variables.requestorName>
+                          SYSID: <+pipeline.variables.sysid>
+                          Branch: master"
+                          git push origin master
                           echo "pushed to master"
                   failureStrategies:
                     - onFailure:

@@ -153,6 +153,11 @@ spec:
                   title: System Incidents URL
                   type: string
                   ui:placeholder: "Incidents URL - link to ServiceNow platform incident view"
+                systemWizProjectId:
+                  title: System Wiz Project ID
+                  type: string
+                  description: "Platform-scoped Wiz project — shows aggregate security posture across all services in this system"
+                  ui:placeholder: "Wiz Project ID — platform-level project in Wiz console"
               required:
                 - systemTitle
                 - systemDescription
@@ -194,8 +199,8 @@ spec:
                 title: Resource Name
                 type: string
                 pattern: "^[a-z][a-z0-9-]+$"
-                description: "kebab-case — e.g. orders-db"
-                ui:placeholder: "Resource Name - e.g. orders-db"
+                description: "kebab-case — must match target: in now.yaml databases section. e.g. payments-postgres"
+                ui:placeholder: "Resource Name - e.g. payments-postgres"
               engine:
                 title: Engine
                 type: string
@@ -204,6 +209,7 @@ spec:
                   - mysql
                   - oracle
                   - mssql
+                  - mongodb
               description:
                 title: Description
                 type: string
@@ -227,8 +233,8 @@ spec:
                 title: Resource Name
                 type: string
                 pattern: "^[a-z][a-z0-9-]+$"
-                description: "kebab-case — e.g. orders-cache"
-                ui:placeholder: "Resource Name - e.g. orders-cache"
+                description: "kebab-case — must match target: in now.yaml databases section (engine redis/memcached). e.g. payments-redis"
+                ui:placeholder: "Resource Name - e.g. payments-redis"
               engine:
                 title: Engine
                 type: string
@@ -257,8 +263,12 @@ spec:
                 title: Resource Name
                 type: string
                 pattern: "^[a-z][a-z0-9-]+$"
-                description: "kebab-case — e.g. orders-kafka"
-                ui:placeholder: "Resource Name - e.g. orders-kafka"
+                description: "kebab-case — must match target: in now.yaml kafka section. e.g. payments-kafka"
+                ui:placeholder: "Resource Name - e.g. payments-kafka"
+              bootstrapServers:
+                title: Bootstrap Servers
+                type: string
+                ui:placeholder: "Bootstrap Servers - e.g. kafka.bank.com:9092"
               description:
                 title: Description
                 type: string
@@ -281,12 +291,24 @@ spec:
                 title: Resource Name
                 type: string
                 pattern: "^[a-z][a-z0-9-]+$"
-                description: "kebab-case — e.g. orders-mq"
-                ui:placeholder: "Resource Name - e.g. orders-mq"
+                description: "kebab-case — must match target: in now.yaml mq section. e.g. payments-ibmmq"
+                ui:placeholder: "Resource Name - e.g. payments-ibmmq"
+              host:
+                title: Host
+                type: string
+                ui:placeholder: "Host - e.g. mqserver.bank.com:1414"
+              queueManager:
+                title: Queue Manager
+                type: string
+                ui:placeholder: "Queue Manager - e.g. QM1"
+              channel:
+                title: Channel
+                type: string
+                ui:placeholder: "Channel - e.g. APP.SVRCONN"
               description:
                 title: Description
                 type: string
-                ui:placeholder: "Description - host, port, auth, queues managed"
+                ui:placeholder: "Description - auth method, queues managed"
                 ui:widget: textarea
                 ui:options:
                   rows: 2
@@ -305,8 +327,8 @@ spec:
                 title: Resource Name
                 type: string
                 pattern: "^[a-z][a-z0-9-]+$"
-                description: "kebab-case — e.g. orders-ftp"
-                ui:placeholder: "Resource Name - e.g. orders-ftp"
+                description: "kebab-case — must match target: in now.yaml ftp section. e.g. payments-ftp"
+                ui:placeholder: "Resource Name - e.g. payments-ftp"
               description:
                 title: Description
                 type: string
@@ -352,6 +374,11 @@ spec:
 
     - title: Observability & Quality
       properties:
+        wizProjectId:
+          title: Wiz Project ID
+          type: string
+          description: "Wiz project identifier — activates cloud security posture cards in the catalog"
+          ui:placeholder: "Wiz Project ID — find in Wiz console → Projects"
         datadogDashboardUrl:
           title: Datadog Dashboard URL
           type: string
@@ -713,6 +740,8 @@ spec:
           systemOncallTeam: "{{ parameters.systemOncallTeam or '' }}"
           systemOncallRotationUrl: "{{ parameters.systemOncallRotationUrl or '' }}"
           systemOncallIncidentsUrl: "{{ parameters.systemOncallIncidentsUrl or '' }}"
+          systemWizProjectId: "{{ parameters.systemWizProjectId or '' }}"
+          wizProjectId: "{{ parameters.wizProjectId or '' }}"
           datadogDashboardUrl: "{{ parameters.datadogDashboardUrl or '' }}"
           datadogServiceName: "{{ parameters.datadogServiceName or '' }}"
           dynatraceDashboardUrl: "{{ parameters.dynatraceDashboardUrl or '' }}"

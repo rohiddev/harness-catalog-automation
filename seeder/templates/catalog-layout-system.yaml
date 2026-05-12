@@ -7,7 +7,7 @@
 # and on-call for the platform as a whole — not individual components.
 #
 # Tabs:
-#   Overview | Telemetry | Blast Radius | On-call / Incidents
+#   Overview | Telemetry | Wiz | Blast Radius | On-call / Incidents
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml (System section)
 # =============================================================================
@@ -54,7 +54,7 @@ page:
             title: Datadog
             items:
               - label: System Dashboard
-                value: <+metadata.annotations["datadog.com/system-dashboard-url"]>
+                value: <+metadata.annotations["datadoghq.com/system-dashboard-url"]>
                 type: link
 
         - component: EntityAdditionalInfoCard
@@ -66,6 +66,39 @@ page:
               - label: System Dashboard
                 value: <+metadata.annotations["dynatrace.com/system-dashboard-url"]>
                 type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Wiz — platform-level cloud security posture across all services in this system
+    # Uses wiz.io/project-id annotation set to a platform-scoped Wiz project
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Wiz
+      path: /wiz
+      title: Wiz
+      contents:
+        - component: EntityWizIssues
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntityIssuesWidget
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntityIssuesChart
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
+        - component: EntitySeverityChart
+          specs:
+            props:
+              variant: gridItem
+            gridProps:
+              md: 6
 
     # ─────────────────────────────────────────────────────────────────────────
     # Blast Radius — full platform dependency graph + validation findings
@@ -94,12 +127,6 @@ page:
                 type: text
               - label: Transitive Blast Radius
                 value: <+metadata.annotations["blast-radius/transitive-count"]>
-                type: text
-              - label: Undeclared Dependencies
-                value: <+metadata.annotations["blast-radius/undeclared-deps"]>
-                type: text
-              - label: Stale Declarations
-                value: <+metadata.annotations["blast-radius/stale-deps"]>
                 type: text
 
     # ─────────────────────────────────────────────────────────────────────────
