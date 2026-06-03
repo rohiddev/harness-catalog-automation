@@ -158,6 +158,26 @@ spec:
                   type: string
                   description: "Platform-scoped Wiz project — shows aggregate security posture across all services in this system"
                   ui:placeholder: "Wiz Project ID — platform-level project in Wiz console"
+                systemChaosHarnessDashboardUrl:
+                  title: Chaos Engineering Dashboard URL
+                  type: string
+                  description: "Harness Chaos Engineering project dashboard for this platform"
+                  ui:placeholder: "HCE Dashboard URL — https://app.harness.io/ng/account/.../chaos/projects/<id>/experiments"
+                systemChaosGamedayRunbookUrl:
+                  title: GameDay Runbook URL
+                  type: string
+                  description: "Confluence or runbook link covering chaos game day procedures for this platform"
+                  ui:placeholder: "GameDay Runbook URL — link to game day runbook"
+                systemRafayProjectName:
+                  title: Rafay Project Name
+                  type: string
+                  description: "Rafay project that covers all clusters belonging to this platform — powers K8s Ops tab"
+                  ui:placeholder: "Rafay Project Name — e.g. payments-platform"
+                systemRafayProjectDashboardUrl:
+                  title: Rafay Project Dashboard URL
+                  type: string
+                  description: "Direct URL to this platform's project in the Rafay console"
+                  ui:placeholder: "Rafay Dashboard URL — https://console.rafay.dev/projects/<id>"
               required:
                 - systemTitle
                 - systemDescription
@@ -741,6 +761,10 @@ spec:
           systemOncallRotationUrl: "{{ parameters.systemOncallRotationUrl or '' }}"
           systemOncallIncidentsUrl: "{{ parameters.systemOncallIncidentsUrl or '' }}"
           systemWizProjectId: "{{ parameters.systemWizProjectId or '' }}"
+          systemChaosHarnessDashboardUrl: "{{ parameters.systemChaosHarnessDashboardUrl or '' }}"
+          systemChaosGamedayRunbookUrl: "{{ parameters.systemChaosGamedayRunbookUrl or '' }}"
+          systemRafayProjectName: "{{ parameters.systemRafayProjectName or '' }}"
+          systemRafayProjectDashboardUrl: "{{ parameters.systemRafayProjectDashboardUrl or '' }}"
           wizProjectId: "{{ parameters.wizProjectId or '' }}"
           datadogDashboardUrl: "{{ parameters.datadogDashboardUrl or '' }}"
           datadogServiceName: "{{ parameters.datadogServiceName or '' }}"

@@ -225,6 +225,22 @@ pipeline:
       type: String
       description: "Platform-scoped Wiz project ID for System entity"
       value: <+trigger.payload.systemWizProjectId>
+    - name: systemChaosHarnessDashboardUrl
+      type: String
+      description: "HCE project dashboard URL for this platform"
+      value: <+trigger.payload.systemChaosHarnessDashboardUrl>
+    - name: systemChaosGamedayRunbookUrl
+      type: String
+      description: "Chaos game day runbook URL for this platform"
+      value: <+trigger.payload.systemChaosGamedayRunbookUrl>
+    - name: systemRafayProjectName
+      type: String
+      description: "Rafay project name covering all clusters for this platform"
+      value: <+trigger.payload.systemRafayProjectName>
+    - name: systemRafayProjectDashboardUrl
+      type: String
+      description: "Rafay console project dashboard URL"
+      value: <+trigger.payload.systemRafayProjectDashboardUrl>
 
   stages:
     - stage:
@@ -420,6 +436,10 @@ pipeline:
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
+                          SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \
+                          SYSTEM_RAFAY_PROJECT_NAME="<+pipeline.variables.systemRafayProjectName>" \
+                          SYSTEM_RAFAY_PROJECT_DASHBOARD_URL="<+pipeline.variables.systemRafayProjectDashboardUrl>" \
                           GOPATH=/tmp/go-cache \
                           GOCACHE=/tmp/go-build-cache \
                           go run /tmp/catalog-automation/seeder/appender/main.go
@@ -536,6 +556,10 @@ pipeline:
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
+                          SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \
+                          SYSTEM_RAFAY_PROJECT_NAME="<+pipeline.variables.systemRafayProjectName>" \
+                          SYSTEM_RAFAY_PROJECT_DASHBOARD_URL="<+pipeline.variables.systemRafayProjectDashboardUrl>" \
                           GOPATH=/tmp/go-cache \
                           GOCACHE=/tmp/go-build-cache \
                           go run /tmp/catalog-automation/seeder/appender/main.go
@@ -652,6 +676,10 @@ pipeline:
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
+                          SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
+                          SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \
+                          SYSTEM_RAFAY_PROJECT_NAME="<+pipeline.variables.systemRafayProjectName>" \
+                          SYSTEM_RAFAY_PROJECT_DASHBOARD_URL="<+pipeline.variables.systemRafayProjectDashboardUrl>" \
                           GOPATH=/tmp/go-cache \
                           GOCACHE=/tmp/go-build-cache \
                           go run /tmp/catalog-automation/seeder/appender/main.go

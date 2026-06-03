@@ -7,7 +7,7 @@
 # and on-call for the platform as a whole — not individual components.
 #
 # Tabs:
-#   Overview | Telemetry | Wiz | Blast Radius | On-call / Incidents
+#   Overview | Telemetry | Wiz | Blast Radius | Chaos Engineering | K8s Ops | On-call / Incidents
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml (System section)
 # =============================================================================
@@ -127,6 +127,84 @@ page:
                 type: text
               - label: Transitive Blast Radius
                 value: <+metadata.annotations["blast-radius/transitive-count"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Chaos Engineering — Harness Chaos Engineering resilience view for this system
+    # chaos.harness.io/project-id links the HCE project that scopes experiments
+    # for all services belonging to this platform.
+    # Resilience score and experiment count written nightly by the chaos pipeline.
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Chaos Engineering
+      path: /chaos
+      title: Chaos Engineering
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Resilience
+            items:
+              - label: Resilience Score
+                value: <+metadata.annotations["chaos.harness.io/resilience-score"]>
+                type: text
+              - label: Experiments Configured
+                value: <+metadata.annotations["chaos.harness.io/experiment-count"]>
+                type: text
+              - label: Last Run
+                value: <+metadata.annotations["chaos.harness.io/last-run-date"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Harness Chaos Engineering
+            items:
+              - label: HCE Project Dashboard
+                value: <+metadata.annotations["chaos.harness.io/dashboard-url"]>
+                type: link
+              - label: GameDay Runbook
+                value: <+metadata.annotations["chaos.harness.io/gameday-runbook-url"]>
+                type: link
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Rafay — SRE fleet management view for this platform's Kubernetes footprint
+    # System level = Rafay project scope: all clusters, namespaces, RBAC, workloads
+    # Requires: IDP Admin -> Plugins -> Rafay -> Enable + configure API credentials
+    # Annotation: rafay.dev/project-name set to this system's identifier
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: K8s Ops
+      path: /k8s-ops
+      title: K8s Ops
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Fleet Overview
+            items:
+              - label: Rafay Project
+                value: <+metadata.annotations["rafay.dev/project-name"]>
+                type: text
+              - label: Project Dashboard
+                value: <+metadata.annotations["rafay.dev/project-dashboard-url"]>
+                type: link
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Operations
+            items:
+              - label: Cluster Count
+                value: <+metadata.annotations["rafay.dev/cluster-count"]>
+                type: text
+              - label: Namespace Count
+                value: <+metadata.annotations["rafay.dev/namespace-count"]>
+                type: text
+              - label: Last Fleet Sync
+                value: <+metadata.annotations["rafay.dev/last-sync"]>
                 type: text
 
     # ─────────────────────────────────────────────────────────────────────────

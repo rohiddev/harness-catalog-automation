@@ -1,0 +1,401 @@
+apiVersion: harness.io/v1
+kind: Workflow
+name: update-service-info
+identifier: update_service_info
+type: service
+owner: platform_engineering
+orgIdentifier: default
+projectIdentifier: xxx-IDP-project
+icon: scaffolder
+metadata:
+  description: >
+    Update your service catalog entry — description, observability dashboards,
+    on-call details, database info, and system-level platform information.
+    Quick form, no dependency declarations needed. Use "Declare Service Dependencies"
+    to register resources, APIs, and messaging integrations.
+  tags:
+    - catalog
+    - platform
+    - self-service
+
+spec:
+  parameters:
+
+    # ── Page 1: Select Service ───────────────────────────────────────────────
+    - title: Select Service
+      required:
+        - componentIdentifier
+      properties:
+
+        accountId:
+          title: Account ID
+          type: string
+          default: "ACCOUNT_ID"
+          disabled: true
+
+        componentIdentifier:
+          title: Service Component
+          type: string
+          description: "Select the service you want to update"
+          ui:field: SelectFieldFromApi
+          ui:options:
+            path: proxy/catalog-api/v1/entities?filter=kind=Component
+            valueSelector: identifier
+            labelSelector: metadata.title
+            setContextData:
+              sysid: metadata.annotations.bank.com/sysid
+              systemIdentifier: spec.system.0
+              ownerGroup: spec.owner
+              repoSlug: metadata.annotations.github.com/project-slug
+          ui:autofocus: true
+
+        sysid:
+          title: SYSID
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sysid}}"
+
+        systemIdentifier:
+          title: System
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.systemIdentifier}}"
+
+        ownerGroup:
+          title: Owner Group
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.ownerGroup}}"
+
+        repoSlug:
+          title: Repository
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.repoSlug}}"
+
+    # ── Page 2: System (optional) ────────────────────────────────────────────
+    - title: Platform / System Info
+      description: >
+        Optional — update information about the platform this service belongs to.
+        Only system owners need to fill this section.
+      properties:
+
+        updateSystem:
+          title: Update platform information?
+          type: string
+          enum:
+            - "No"
+            - "Yes"
+          default: "No"
+
+      dependencies:
+        updateSystem:
+          oneOf:
+            - properties:
+                updateSystem:
+                  const: "No"
+            - properties:
+                updateSystem:
+                  const: "Yes"
+                systemTitle:
+                  title: Platform Title
+                  type: string
+                  ui:placeholder: "Platform Title - e.g. Payments Platform"
+                systemDescription:
+                  title: Platform Description
+                  type: string
+                  ui:widget: textarea
+                  ui:options:
+                    rows: 3
+                  ui:placeholder: "What does this platform do?"
+                systemDomain:
+                  title: Domain
+                  type: string
+                  enum:
+                    - banking
+                    - lending
+                    - risk
+                    - payments
+                    - operations
+                    - data
+                systemConfluence:
+                  title: Confluence URL
+                  type: string
+                  ui:placeholder: "https://confluence.bank.com/display/PROJ"
+                systemRunbook:
+                  title: Runbook URL
+                  type: string
+                  ui:placeholder: "https://runbooks.bank.com/platform-name"
+                systemTags:
+                  title: Tags
+                  type: string
+                  description: "Comma-separated"
+                  ui:placeholder: "e.g. payments,tier-1"
+                systemKubernetesClusters:
+                  title: Kubernetes Clusters
+                  type: string
+                  description: "Comma-separated cluster names this platform spans"
+                  ui:placeholder: "e.g. prod-eks-us-east-1,dr-eks-us-west-2"
+                systemDatadogDashboardUrl:
+                  title: Platform Datadog Dashboard
+                  type: string
+                  ui:placeholder: "https://app.datadoghq.com/dashboard/<id>"
+                systemDynatraceDashboardUrl:
+                  title: Platform Dynatrace Dashboard
+                  type: string
+                  ui:placeholder: "https://company.live.dynatrace.com/#dashboard;id=<id>"
+                systemOncallTeam:
+                  title: Platform On-call Team
+                  type: string
+                  ui:placeholder: "e.g. payments-platform-sre"
+                systemOncallRotationUrl:
+                  title: Platform On-call Rotation URL
+                  type: string
+                  ui:placeholder: "Link to ServiceNow on-call schedule"
+                systemOncallIncidentsUrl:
+                  title: Platform Incidents URL
+                  type: string
+                  ui:placeholder: "Link to ServiceNow platform incident view"
+                systemWizProjectId:
+                  title: Platform Wiz Project ID
+                  type: string
+                  description: "Platform-scoped Wiz project — aggregate security posture across all services"
+                  ui:placeholder: "Wiz Project ID — platform-level"
+                systemChaosHarnessDashboardUrl:
+                  title: Chaos Engineering Dashboard URL
+                  type: string
+                  ui:placeholder: "https://app.harness.io/ng/account/.../chaos/projects/<id>/experiments"
+                systemChaosGamedayRunbookUrl:
+                  title: GameDay Runbook URL
+                  type: string
+                  ui:placeholder: "Confluence link for chaos game day procedures"
+                systemRafayProjectName:
+                  title: Rafay Project Name
+                  type: string
+                  description: "Rafay project covering all clusters for this platform — powers K8s Ops tab"
+                  ui:placeholder: "e.g. payments-platform"
+                systemRafayProjectDashboardUrl:
+                  title: Rafay Project Dashboard URL
+                  type: string
+                  ui:placeholder: "https://console.rafay.dev/projects/<id>"
+              required:
+                - systemTitle
+                - systemDescription
+                - systemDomain
+
+    # ── Page 3: Service Info ─────────────────────────────────────────────────
+    - title: Service Info
+      properties:
+        componentDescription:
+          title: Service Description
+          type: string
+          ui:widget: textarea
+          ui:options:
+            rows: 3
+          ui:placeholder: "What does this service do? Who does it serve?"
+        componentConfluenceUrl:
+          title: Confluence URL
+          type: string
+          ui:placeholder: "https://confluence.bank.com/display/PAY"
+        componentRunbookUrl:
+          title: Runbook URL
+          type: string
+          ui:placeholder: "https://runbooks.bank.com/payments-service"
+
+    # ── Page 4: Observability & Quality ─────────────────────────────────────
+    - title: Observability & Quality
+      description: >
+        Fill whichever tools your team uses. All fields are optional.
+      properties:
+        datadogDashboardUrl:
+          title: Datadog Dashboard URL
+          type: string
+          ui:placeholder: "https://app.datadoghq.com/dashboard/<id>"
+        datadogServiceName:
+          title: Datadog Service Name
+          type: string
+          ui:placeholder: "e.g. payments-service"
+        dynatraceDashboardUrl:
+          title: Dynatrace Dashboard URL
+          type: string
+          ui:placeholder: "https://company.live.dynatrace.com/#dashboard;id=<id>"
+        dynatraceEntityId:
+          title: Dynatrace Entity ID
+          type: string
+          ui:placeholder: "e.g. SERVICE-abc123"
+        sonarqubeProjectKey:
+          title: SonarQube Project Key
+          type: string
+          ui:placeholder: "e.g. payments-service"
+        sonarqubeDashboardUrl:
+          title: SonarQube Dashboard URL
+          type: string
+          ui:placeholder: "https://sonarqube.company.com/dashboard?id=payments-service"
+        qualityCoverageTarget:
+          title: Coverage Target (%)
+          type: string
+          ui:placeholder: "e.g. 80"
+        qualityDoraDashboardUrl:
+          title: DORA / SEI Dashboard URL
+          type: string
+          ui:placeholder: "Link to SEI dashboard for this service"
+        wizProjectId:
+          title: Wiz Project ID
+          type: string
+          description: "Activates cloud security posture cards on this service's catalog page"
+          ui:placeholder: "Wiz Project ID — find in Wiz console → Projects"
+
+    # ── Page 5: On-call & Database ───────────────────────────────────────────
+    - title: On-call & Database
+      description: >
+        All fields are optional. Fill what is known — incomplete entries are
+        better than no entries.
+      properties:
+        oncallTeam:
+          title: On-call Team
+          type: string
+          ui:placeholder: "e.g. payments-service-team"
+        oncallRotationUrl:
+          title: Rotation Schedule URL
+          type: string
+          ui:placeholder: "Link to PagerDuty or ServiceNow rotation schedule"
+        oncallIncidentsUrl:
+          title: Incident Dashboard URL
+          type: string
+          ui:placeholder: "Link to ServiceNow or incident view"
+        oncallLastIncidentDate:
+          title: Last Incident Date
+          type: string
+          ui:placeholder: "e.g. 2026-04-15"
+        dbEngine:
+          title: Database Engine
+          type: string
+          enum:
+            - ""
+            - postgresql
+            - mysql
+            - oracle
+            - mssql
+            - mongodb
+          enumNames:
+            - "Not applicable"
+            - PostgreSQL
+            - MySQL
+            - Oracle
+            - MSSQL
+            - MongoDB
+          default: ""
+        dbSchema:
+          title: Database Schema
+          type: string
+          ui:placeholder: "e.g. payments_schema"
+        dbDbaRunbookUrl:
+          title: DBA Runbook URL
+          type: string
+          ui:placeholder: "Link to DBA team runbook for this service"
+        dbLastMigration:
+          title: Last Migration Date
+          type: string
+          ui:placeholder: "e.g. 2026-04-15"
+        dbBackupPolicy:
+          title: Backup Policy
+          type: string
+          enum:
+            - ""
+            - daily-7d
+            - daily-30d
+            - weekly-90d
+            - none
+          enumNames:
+            - "Not applicable"
+            - Daily - 7 day retention
+            - Daily - 30 day retention
+            - Weekly - 90 day retention
+            - No backup
+          default: ""
+
+  steps:
+    - id: trigger_pipeline
+      name: Update Service Info
+      action: trigger:harness-custom-pipeline
+      input:
+        pipeline: update_catalog_entry_pipeline
+        payload:
+          componentIdentifier: "{{ parameters.componentIdentifier }}"
+          repoSlug: "{{ parameters.repoSlug }}"
+          sysid: "{{ parameters.sysid }}"
+          systemIdentifier: "{{ parameters.systemIdentifier }}"
+          ownerGroup: "{{ parameters.ownerGroup }}"
+          componentDescription: "{{ parameters.componentDescription or '' }}"
+          componentConfluenceUrl: "{{ parameters.componentConfluenceUrl or '' }}"
+          componentRunbookUrl: "{{ parameters.componentRunbookUrl or '' }}"
+          updateSystem: "{{ parameters.updateSystem }}"
+          systemTitle: "{{ parameters.systemTitle or '' }}"
+          systemDescription: "{{ parameters.systemDescription or '' }}"
+          systemDomain: "{{ parameters.systemDomain or '' }}"
+          systemConfluence: "{{ parameters.systemConfluence or '' }}"
+          systemRunbook: "{{ parameters.systemRunbook or '' }}"
+          systemTags: "{{ parameters.systemTags or '' }}"
+          systemKubernetesClusters: "{{ parameters.systemKubernetesClusters or '' }}"
+          systemDatadogDashboardUrl: "{{ parameters.systemDatadogDashboardUrl or '' }}"
+          systemDynatraceDashboardUrl: "{{ parameters.systemDynatraceDashboardUrl or '' }}"
+          systemOncallTeam: "{{ parameters.systemOncallTeam or '' }}"
+          systemOncallRotationUrl: "{{ parameters.systemOncallRotationUrl or '' }}"
+          systemOncallIncidentsUrl: "{{ parameters.systemOncallIncidentsUrl or '' }}"
+          systemWizProjectId: "{{ parameters.systemWizProjectId or '' }}"
+          systemChaosHarnessDashboardUrl: "{{ parameters.systemChaosHarnessDashboardUrl or '' }}"
+          systemChaosGamedayRunbookUrl: "{{ parameters.systemChaosGamedayRunbookUrl or '' }}"
+          systemRafayProjectName: "{{ parameters.systemRafayProjectName or '' }}"
+          systemRafayProjectDashboardUrl: "{{ parameters.systemRafayProjectDashboardUrl or '' }}"
+          datadogDashboardUrl: "{{ parameters.datadogDashboardUrl or '' }}"
+          datadogServiceName: "{{ parameters.datadogServiceName or '' }}"
+          dynatraceDashboardUrl: "{{ parameters.dynatraceDashboardUrl or '' }}"
+          dynatraceEntityId: "{{ parameters.dynatraceEntityId or '' }}"
+          sonarqubeProjectKey: "{{ parameters.sonarqubeProjectKey or '' }}"
+          sonarqubeDashboardUrl: "{{ parameters.sonarqubeDashboardUrl or '' }}"
+          qualityCoverageTarget: "{{ parameters.qualityCoverageTarget or '' }}"
+          qualityDoraDashboardUrl: "{{ parameters.qualityDoraDashboardUrl or '' }}"
+          wizProjectId: "{{ parameters.wizProjectId or '' }}"
+          oncallTeam: "{{ parameters.oncallTeam or '' }}"
+          oncallRotationUrl: "{{ parameters.oncallRotationUrl or '' }}"
+          oncallIncidentsUrl: "{{ parameters.oncallIncidentsUrl or '' }}"
+          oncallLastIncidentDate: "{{ parameters.oncallLastIncidentDate or '' }}"
+          dbEngine: "{{ parameters.dbEngine or '' }}"
+          dbSchema: "{{ parameters.dbSchema or '' }}"
+          dbDbaRunbookUrl: "{{ parameters.dbDbaRunbookUrl or '' }}"
+          dbLastMigration: "{{ parameters.dbLastMigration or '' }}"
+          dbBackupPolicy: "{{ parameters.dbBackupPolicy or '' }}"
+          databases: "[]"
+          caches: "[]"
+          kafkaClusters: "[]"
+          mqBrokers: "[]"
+          ftpServers: "[]"
+          restApis: "[]"
+          kafkaProducers: "[]"
+          kafkaConsumers: "[]"
+          mqProducers: "[]"
+          mqConsumers: "[]"
+          ftpOutbound: "[]"
+          ftpInbound: "[]"
+          kubernetesWorkloads: "[]"
+          requestorName: "${{ user.entity.metadata.name }}"
+          requestorEmail: "${{ user.entity.spec.profile.email or user.entity.metadata.name }}"
+
+  output:
+    text:
+      title: Service Info Updated
+      content: >
+        Your service info has been submitted. Changes will appear in the catalog
+        within a few minutes once the pipeline commits to your repo.
+        To declare Kafka topics, APIs, databases and other dependencies,
+        use the "Declare Service Dependencies" workflow.
+      summary:
+        component: "{{ parameters.componentIdentifier }}"
+        requestor: "${{ user.entity.metadata.name }}"
+    links:
+      - title: View Pipeline Execution
+        url: "https://app.harness.io/ng/account/{{ parameters.accountId }}/module/idp-admin/orgs/default/projects/xxx-IDP-project/pipelines/update_catalog_entry_pipeline/executions"

@@ -3,8 +3,8 @@
 # Applies to: kind: Component, type: service
 #
 # Tabs:
-#   Overview | Blast Radius | Observability | Security Scan | Wiz | On-call / Incidents |
-#   Code Quality | Database | Kubernetes | Cloud Cost | CI/CD | Docs
+#   Overview | CI/CD | Code Quality | Security Scan | Wiz | Kubernetes |
+#   Observability | Cloud Cost | On-call / Incidents | Blast Radius | Database | Docs
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml
 # =============================================================================
@@ -36,91 +36,47 @@ page:
             md: 12
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Blast Radius — dependency graph + validation signal findings
-    # Graph driven by spec.dependsOn in catalog-info.yaml (from CMDB/now.yaml)
-    # Annotation findings written nightly by the cross-reference pipeline
+    # CI/CD — Harness pipeline dashboard link
+    # Powered by harness.io/project-url annotation
     # ─────────────────────────────────────────────────────────────────────────
-    - name: Blast Radius
-      path: /blast-radius
-      title: Blast Radius
+    - name: CI/CD
+      path: /ci-cd
+      title: CI/CD
       contents:
-        - component: EntityCatalogGraphCard
-          gridProps:
-            md: 12
-
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: Validation Status
-            items:
-              - label: Last Validated
-                value: <+metadata.annotations["blast-radius/last-validated"]>
-                type: text
-              - label: Undeclared Dependencies
-                value: <+metadata.annotations["blast-radius/undeclared-deps"]>
-                type: text
-              - label: Stale Declarations
-                value: <+metadata.annotations["blast-radius/stale-deps"]>
-                type: text
-
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: SBOM Signals
-            items:
-              - label: Kafka
-                value: <+metadata.annotations["sbom/kafka"]>
-                type: text
-              - label: Database
-                value: <+metadata.annotations["sbom/database"]>
-                type: text
-              - label: MQ
-                value: <+metadata.annotations["sbom/mq"]>
-                type: text
-              - label: FTP
-                value: <+metadata.annotations["sbom/ftp"]>
-                type: text
-              - label: API
-                value: <+metadata.annotations["sbom/api"]>
-                type: text
-              - label: Last Scan
-                value: <+metadata.annotations["sbom/last-scan"]>
-                type: text
+        - component: EntityHarnessCiCdContent
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Observability — Datadog and Dynatrace, teams fill whichever applies
+    # Code Quality — SonarQube, coverage, DORA
     # ─────────────────────────────────────────────────────────────────────────
-    - name: Observability
-      path: /observability
-      title: Observability
+    - name: Code Quality
+      path: /code-quality
+      title: Code Quality
       contents:
         - component: EntityAdditionalInfoCard
           gridProps:
             md: 6
           specs:
-            title: Datadog
+            title: SonarQube
             items:
               - label: Dashboard
-                value: <+metadata.annotations["datadoghq.com/dashboard-url"]>
+                value: <+metadata.annotations["sonarqube.org/dashboard-url"]>
                 type: link
-              - label: Service Name
-                value: <+metadata.annotations["datadoghq.com/service-name"]>
+              - label: Project Key
+                value: <+metadata.annotations["sonarqube.org/project-key"]>
+                type: text
+              - label: Coverage Target
+                value: <+metadata.annotations["quality/coverage-target"]>
                 type: text
 
         - component: EntityAdditionalInfoCard
           gridProps:
             md: 6
           specs:
-            title: Dynatrace
+            title: DORA Metrics
             items:
-              - label: Dashboard
-                value: <+metadata.annotations["dynatrace.com/dashboard-url"]>
+              - label: SEI Dashboard
+                value: <+metadata.annotations["quality/dora-dashboard-url"]>
                 type: link
-              - label: Entity ID
-                value: <+metadata.annotations["dynatrace.com/entity-id"]>
-                type: text
 
     # ─────────────────────────────────────────────────────────────────────────
     # Security Scan — scan results, quality gate, last scan date
@@ -180,108 +136,6 @@ page:
               md: 6
 
     # ─────────────────────────────────────────────────────────────────────────
-    # On-call / Incidents — rotation, incident history, ServiceNow
-    # ─────────────────────────────────────────────────────────────────────────
-    - name: On-call / Incidents
-      path: /oncall
-      title: On-call / Incidents
-      contents:
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: On-call
-            items:
-              - label: Team
-                value: <+metadata.annotations["oncall/team"]>
-                type: text
-              - label: Rotation Schedule
-                value: <+metadata.annotations["oncall/rotation-url"]>
-                type: link
-
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: Incidents
-            items:
-              - label: Incident Dashboard
-                value: <+metadata.annotations["oncall/incidents-url"]>
-                type: link
-              - label: Last Incident
-                value: <+metadata.annotations["oncall/last-incident-date"]>
-                type: text
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # Code Quality — SonarQube, coverage, DORA
-    # ─────────────────────────────────────────────────────────────────────────
-    - name: Code Quality
-      path: /code-quality
-      title: Code Quality
-      contents:
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: SonarQube
-            items:
-              - label: Dashboard
-                value: <+metadata.annotations["sonarqube.org/dashboard-url"]>
-                type: link
-              - label: Project Key
-                value: <+metadata.annotations["sonarqube.org/project-key"]>
-                type: text
-              - label: Coverage Target
-                value: <+metadata.annotations["quality/coverage-target"]>
-                type: text
-
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: DORA Metrics
-            items:
-              - label: SEI Dashboard
-                value: <+metadata.annotations["quality/dora-dashboard-url"]>
-                type: link
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # Database — engine, schema, DBA runbook, migration history
-    # ─────────────────────────────────────────────────────────────────────────
-    - name: Database
-      path: /database
-      title: Database
-      contents:
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: Database Info
-            items:
-              - label: Engine
-                value: <+metadata.annotations["db/engine"]>
-                type: text
-              - label: Schema
-                value: <+metadata.annotations["db/schema"]>
-                type: text
-              - label: Backup Policy
-                value: <+metadata.annotations["db/backup-policy"]>
-                type: text
-              - label: Last Migration
-                value: <+metadata.annotations["db/last-migration"]>
-                type: text
-
-        - component: EntityAdditionalInfoCard
-          gridProps:
-            md: 6
-          specs:
-            title: DBA
-            items:
-              - label: Runbook
-                value: <+metadata.annotations["db/dba-runbook-url"]>
-                type: link
-
-    # ─────────────────────────────────────────────────────────────────────────
     # Kubernetes — live pod health, deployments, restarts (Kubernetes by Spotify)
     # Powered by backstage.io/kubernetes-id annotation — dev-facing read-only view
     # ─────────────────────────────────────────────────────────────────────────
@@ -292,6 +146,39 @@ page:
         - component: EntityKubernetesContent
           gridProps:
             md: 12
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Observability — Datadog and Dynatrace, teams fill whichever applies
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Observability
+      path: /observability
+      title: Observability
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Datadog
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["datadoghq.com/dashboard-url"]>
+                type: link
+              - label: Service Name
+                value: <+metadata.annotations["datadoghq.com/service-name"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Dynatrace
+            items:
+              - label: Dashboard
+                value: <+metadata.annotations["dynatrace.com/dashboard-url"]>
+                type: link
+              - label: Entity ID
+                value: <+metadata.annotations["dynatrace.com/entity-id"]>
+                type: text
 
     # ─────────────────────────────────────────────────────────────────────────
     # Cloud Cost — K8s namespace spend (Kubecost) + AWS spend (Cost Explorer)
@@ -328,14 +215,127 @@ page:
                 type: text
 
     # ─────────────────────────────────────────────────────────────────────────
-    # CI/CD — Harness pipeline dashboard link
-    # Powered by harness.io/project-url annotation
+    # On-call / Incidents — rotation, incident history, ServiceNow
     # ─────────────────────────────────────────────────────────────────────────
-    - name: CI/CD
-      path: /ci-cd
-      title: CI/CD
+    - name: On-call / Incidents
+      path: /oncall
+      title: On-call / Incidents
       contents:
-        - component: EntityHarnessCiCdContent
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: On-call
+            items:
+              - label: Team
+                value: <+metadata.annotations["oncall/team"]>
+                type: text
+              - label: Rotation Schedule
+                value: <+metadata.annotations["oncall/rotation-url"]>
+                type: link
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Incidents
+            items:
+              - label: Incident Dashboard
+                value: <+metadata.annotations["oncall/incidents-url"]>
+                type: link
+              - label: Last Incident
+                value: <+metadata.annotations["oncall/last-incident-date"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Blast Radius — dependency graph + validation signal findings
+    # Graph driven by spec.dependsOn in catalog-info.yaml (from CMDB/now.yaml)
+    # Annotation findings written nightly by the cross-reference pipeline
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Blast Radius
+      path: /blast-radius
+      title: Blast Radius
+      contents:
+        - component: EntityCatalogGraphCard
+          gridProps:
+            md: 12
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Validation Status
+            items:
+              - label: Last Validated
+                value: <+metadata.annotations["blast-radius/last-validated"]>
+                type: text
+              - label: Undeclared Dependencies
+                value: <+metadata.annotations["blast-radius/undeclared-deps"]>
+                type: text
+              - label: Stale Declarations
+                value: <+metadata.annotations["blast-radius/stale-deps"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: SBOM Signals
+            items:
+              - label: Kafka
+                value: <+metadata.annotations["sbom/kafka"]>
+                type: text
+              - label: Database
+                value: <+metadata.annotations["sbom/database"]>
+                type: text
+              - label: MQ
+                value: <+metadata.annotations["sbom/mq"]>
+                type: text
+              - label: FTP
+                value: <+metadata.annotations["sbom/ftp"]>
+                type: text
+              - label: API
+                value: <+metadata.annotations["sbom/api"]>
+                type: text
+              - label: Last Scan
+                value: <+metadata.annotations["sbom/last-scan"]>
+                type: text
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Database — engine, schema, DBA runbook, migration history
+    # ─────────────────────────────────────────────────────────────────────────
+    - name: Database
+      path: /database
+      title: Database
+      contents:
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: Database Info
+            items:
+              - label: Engine
+                value: <+metadata.annotations["db/engine"]>
+                type: text
+              - label: Schema
+                value: <+metadata.annotations["db/schema"]>
+                type: text
+              - label: Backup Policy
+                value: <+metadata.annotations["db/backup-policy"]>
+                type: text
+              - label: Last Migration
+                value: <+metadata.annotations["db/last-migration"]>
+                type: text
+
+        - component: EntityAdditionalInfoCard
+          gridProps:
+            md: 6
+          specs:
+            title: DBA
+            items:
+              - label: Runbook
+                value: <+metadata.annotations["db/dba-runbook-url"]>
+                type: link
 
     # ─────────────────────────────────────────────────────────────────────────
     # Docs — TechDocs (MkDocs served from repo)

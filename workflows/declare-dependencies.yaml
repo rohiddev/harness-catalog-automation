@@ -1,0 +1,876 @@
+apiVersion: harness.io/v1
+kind: Workflow
+name: declare-dependencies
+identifier: declare_dependencies
+type: service
+owner: platform_engineering
+orgIdentifier: default
+projectIdentifier: xxx-IDP-project
+icon: scaffolder
+metadata:
+  description: >
+    Declare the resources, APIs, and messaging integrations your service owns
+    or consumes. Updates catalog-info.yaml with databases, caches, Kafka topics,
+    IBM MQ queues, FTP paths, REST APIs, and Kubernetes workloads.
+    SBOM signals detected from your codebase are shown as hints.
+    All sections have a skip option — declare what you know today.
+  tags:
+    - catalog
+    - dependencies
+    - platform
+    - self-service
+
+spec:
+  parameters:
+
+    # ── Page 1: Select Service ───────────────────────────────────────────────
+    - title: Select Service
+      description: >
+        Select your service. SBOM signals detected from your last PR scan are
+        shown below — use them as a checklist for what to declare.
+      required:
+        - componentIdentifier
+      properties:
+
+        accountId:
+          title: Account ID
+          type: string
+          default: "ACCOUNT_ID"
+          disabled: true
+
+        componentIdentifier:
+          title: Service Component
+          type: string
+          description: "Select the service you want to update"
+          ui:field: SelectFieldFromApi
+          ui:options:
+            path: proxy/catalog-api/v1/entities?filter=kind=Component
+            valueSelector: identifier
+            labelSelector: metadata.title
+            setContextData:
+              sysid: metadata.annotations.bank.com/sysid
+              systemIdentifier: spec.system.0
+              ownerGroup: spec.owner
+              repoSlug: metadata.annotations.github.com/project-slug
+              sbomKafka: metadata.annotations.sbom/kafka
+              sbomDatabase: metadata.annotations.sbom/database
+              sbomMq: metadata.annotations.sbom/mq
+              sbomFtp: metadata.annotations.sbom/ftp
+              sbomApi: metadata.annotations.sbom/api
+              sbomLastScan: metadata.annotations.sbom/last-scan
+          ui:autofocus: true
+
+        sysid:
+          title: SYSID
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sysid}}"
+
+        repoSlug:
+          title: Repository
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.repoSlug}}"
+
+        sbomKafka:
+          title: "SBOM detected: Kafka"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomKafka}}"
+
+        sbomDatabase:
+          title: "SBOM detected: Database"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomDatabase}}"
+
+        sbomMq:
+          title: "SBOM detected: IBM MQ"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomMq}}"
+
+        sbomFtp:
+          title: "SBOM detected: FTP"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomFtp}}"
+
+        sbomApi:
+          title: "SBOM detected: External API"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomApi}}"
+
+        sbomLastScan:
+          title: "SBOM last scanned"
+          type: string
+          ui:field: ContextViewer
+          readonly: true
+          getContextData: "{{formContext.sbomLastScan}}"
+
+    # ── Page 2: Resources ────────────────────────────────────────────────────
+    - title: Resources
+      description: >
+        Declare the infrastructure resources this service owns.
+        The SBOM signals on the previous page show what was detected in your
+        codebase — use them as your checklist. Only expand sections you are
+        ready to declare today. The blast radius validator runs nightly and
+        will flag any SBOM-detected signal you have not declared — so anything
+        skipped here will surface as a finding by tomorrow morning.
+
+      properties:
+
+        declareDatabases:
+          title: Declare databases?
+          type: string
+          description: >
+            SBOM scans for database drivers (JDBC, pg, pymongo, etc.).
+            If "Database" was detected on the previous page, declare here
+            or the blast radius validator will raise a finding tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareCaches:
+          title: Declare caches?
+          type: string
+          description: >
+            SBOM scans for Redis and Memcached client libraries.
+            Declare if your service owns a cache instance.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareKafkaClusters:
+          title: Declare Kafka clusters?
+          type: string
+          description: >
+            SBOM scans for Kafka client libraries (kafka-clients, confluent, etc.).
+            If "Kafka" was detected on the previous page, declare the cluster here
+            or the blast radius validator will raise a finding tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareMqBrokers:
+          title: Declare IBM MQ brokers?
+          type: string
+          description: >
+            SBOM scans for IBM MQ client libraries (com.ibm.mq).
+            If "IBM MQ" was detected on the previous page, declare the broker here
+            or the blast radius validator will raise a finding tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareFtpServers:
+          title: Declare FTP servers?
+          type: string
+          description: >
+            SBOM scans for FTP/SFTP client libraries (commons-net, jsch, etc.).
+            If "FTP" was detected on the previous page, declare the server here
+            or the blast radius validator will raise a finding tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareKubernetesWorkloads:
+          title: Declare Kubernetes workloads?
+          type: string
+          description: >
+            Declare the clusters and namespaces this service deploys to.
+            Powers the Kubernetes tab in your catalog entry — without this,
+            the live pod health view will not activate.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+      dependencies:
+        declareDatabases:
+          oneOf:
+            - properties:
+                declareDatabases:
+                  const: "Skip for now"
+            - properties:
+                declareDatabases:
+                  const: "Yes"
+                databases:
+                  title: Databases
+                  type: array
+                  description: "One entry per database this service owns"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - engine
+                      - description
+                    properties:
+                      name:
+                        title: Resource Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        description: "kebab-case — must match target: in now.yaml. e.g. payments-postgres"
+                        ui:placeholder: "e.g. payments-postgres"
+                      engine:
+                        title: Engine
+                        type: string
+                        enum:
+                          - postgresql
+                          - mysql
+                          - oracle
+                          - mssql
+                          - mongodb
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Engine version, hosting, HA setup"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareCaches:
+          oneOf:
+            - properties:
+                declareCaches:
+                  const: "Skip for now"
+            - properties:
+                declareCaches:
+                  const: "Yes"
+                caches:
+                  title: Caches
+                  type: array
+                  description: "One entry per cache this service owns"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - engine
+                      - description
+                    properties:
+                      name:
+                        title: Resource Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-redis"
+                      engine:
+                        title: Engine
+                        type: string
+                        enum:
+                          - redis
+                          - memcached
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Engine version, hosting, replication"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareKafkaClusters:
+          oneOf:
+            - properties:
+                declareKafkaClusters:
+                  const: "Skip for now"
+            - properties:
+                declareKafkaClusters:
+                  const: "Yes"
+                kafkaClusters:
+                  title: Kafka Clusters
+                  type: array
+                  description: "One entry per Kafka cluster this service owns"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - description
+                    properties:
+                      name:
+                        title: Resource Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-kafka"
+                      bootstrapServers:
+                        title: Bootstrap Servers
+                        type: string
+                        ui:placeholder: "e.g. kafka.bank.com:9092"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Auth method, management, purpose"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareMqBrokers:
+          oneOf:
+            - properties:
+                declareMqBrokers:
+                  const: "Skip for now"
+            - properties:
+                declareMqBrokers:
+                  const: "Yes"
+                mqBrokers:
+                  title: IBM MQ Brokers
+                  type: array
+                  description: "One entry per IBM MQ broker this service owns"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - description
+                    properties:
+                      name:
+                        title: Resource Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-ibmmq"
+                      host:
+                        title: Host
+                        type: string
+                        ui:placeholder: "e.g. mqserver.bank.com:1414"
+                      queueManager:
+                        title: Queue Manager
+                        type: string
+                        ui:placeholder: "e.g. QM1"
+                      channel:
+                        title: Channel
+                        type: string
+                        ui:placeholder: "e.g. APP.SVRCONN"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Auth method, queues managed"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareFtpServers:
+          oneOf:
+            - properties:
+                declareFtpServers:
+                  const: "Skip for now"
+            - properties:
+                declareFtpServers:
+                  const: "Yes"
+                ftpServers:
+                  title: FTP Servers
+                  type: array
+                  description: "One entry per FTP server this service owns"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - description
+                    properties:
+                      name:
+                        title: Resource Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-ftp"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Host, protocol, partners, purpose"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareKubernetesWorkloads:
+          oneOf:
+            - properties:
+                declareKubernetesWorkloads:
+                  const: "Skip for now"
+            - properties:
+                declareKubernetesWorkloads:
+                  const: "Yes"
+                kubernetesWorkloads:
+                  title: Kubernetes Workloads
+                  type: array
+                  description: "One entry per cluster or namespace this service deploys to"
+                  items:
+                    type: object
+                    required:
+                      - cluster
+                      - namespace
+                      - labelSelector
+                      - environment
+                    properties:
+                      cluster:
+                        title: Cluster Name
+                        type: string
+                        ui:placeholder: "e.g. prod-eks-us-east-1"
+                      namespace:
+                        title: Namespace
+                        type: string
+                        ui:placeholder: "e.g. payments"
+                      labelSelector:
+                        title: Label Selector
+                        type: string
+                        ui:placeholder: "e.g. app.kubernetes.io/name=payments-service"
+                      environment:
+                        title: Environment
+                        type: string
+                        enum:
+                          - dev
+                          - qa
+                          - prod
+                        ui:widget: select
+
+    # ── Page 3: APIs ─────────────────────────────────────────────────────────
+    - title: APIs
+      description: >
+        Declare the APIs this service exposes and consumes. These populate
+        spec.providesApis and spec.consumesApis in your catalog entry and
+        make your service's contracts visible to all teams in the catalog.
+        The blast radius validator will flag any SBOM-detected external API
+        usage you have not declared. Skip any section you are not ready to
+        declare today — you can return and submit again at any time.
+
+      properties:
+
+        declareRestApis:
+          title: Declare REST APIs?
+          type: string
+          description: >
+            Declare REST endpoints this service exposes. Activates the
+            Provided APIs section on your catalog Overview tab.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareKafkaProducers:
+          title: Declare Kafka producers (topics this service publishes to)?
+          type: string
+          description: >
+            If "Kafka" was detected in SBOM, declare the topics you publish to
+            or the blast radius validator will flag undeclared Kafka usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareKafkaConsumers:
+          title: Declare Kafka consumers (topics this service subscribes to)?
+          type: string
+          description: >
+            If "Kafka" was detected in SBOM, declare the topics you consume
+            or the blast radius validator will flag undeclared Kafka usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareMqProducers:
+          title: Declare MQ producers (queues this service publishes to)?
+          type: string
+          description: >
+            If "IBM MQ" was detected in SBOM, declare queues you publish to
+            or the blast radius validator will flag undeclared MQ usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareMqConsumers:
+          title: Declare MQ consumers (queues this service reads from)?
+          type: string
+          description: >
+            If "IBM MQ" was detected in SBOM, declare queues you consume
+            or the blast radius validator will flag undeclared MQ usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareFtpOutbound:
+          title: Declare FTP outbound (paths this service deposits files to)?
+          type: string
+          description: >
+            If "FTP" was detected in SBOM, declare outbound paths
+            or the blast radius validator will flag undeclared FTP usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+        declareFtpInbound:
+          title: Declare FTP inbound (paths this service reads files from)?
+          type: string
+          description: >
+            If "FTP" was detected in SBOM, declare inbound paths
+            or the blast radius validator will flag undeclared FTP usage tonight.
+          enum:
+            - "Skip for now"
+            - "Yes"
+          default: "Skip for now"
+
+      dependencies:
+        declareRestApis:
+          oneOf:
+            - properties:
+                declareRestApis:
+                  const: "Skip for now"
+            - properties:
+                declareRestApis:
+                  const: "Yes"
+                restApis:
+                  title: REST APIs
+                  type: array
+                  description: "One entry per REST API this service exposes"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - endpoint
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-rest-api"
+                      endpoint:
+                        title: Base URL
+                        type: string
+                        ui:placeholder: "e.g. https://api.bank.com/payments"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "Who calls this, auth method, rate limits"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareKafkaProducers:
+          oneOf:
+            - properties:
+                declareKafkaProducers:
+                  const: "Skip for now"
+            - properties:
+                declareKafkaProducers:
+                  const: "Yes"
+                kafkaProducers:
+                  title: Kafka Producers
+                  type: array
+                  description: "One entry per Kafka topic this service publishes to"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - topic
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-kafka-producer"
+                      topic:
+                        title: Topic
+                        type: string
+                        ui:placeholder: "e.g. payments.events.payment-processed"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What events are published and who consumes them"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareKafkaConsumers:
+          oneOf:
+            - properties:
+                declareKafkaConsumers:
+                  const: "Skip for now"
+            - properties:
+                declareKafkaConsumers:
+                  const: "Yes"
+                kafkaConsumers:
+                  title: Kafka Consumers
+                  type: array
+                  description: "One entry per Kafka topic this service subscribes to"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - topic
+                      - consumerGroup
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-kafka-consumer"
+                      topic:
+                        title: Topic
+                        type: string
+                        ui:placeholder: "e.g. fraud.events.fraud-decision"
+                      consumerGroup:
+                        title: Consumer Group
+                        type: string
+                        ui:placeholder: "e.g. payments-fraud-consumer"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What topic and what this service does with it"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareMqProducers:
+          oneOf:
+            - properties:
+                declareMqProducers:
+                  const: "Skip for now"
+            - properties:
+                declareMqProducers:
+                  const: "Yes"
+                mqProducers:
+                  title: MQ Producers
+                  type: array
+                  description: "One entry per MQ queue this service publishes to"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - queueName
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-mq-producer"
+                      queueName:
+                        title: Queue Name
+                        type: string
+                        ui:placeholder: "e.g. PAYMENTS.INSTRUCTIONS.OUTBOUND"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What messages are published and who consumes them"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareMqConsumers:
+          oneOf:
+            - properties:
+                declareMqConsumers:
+                  const: "Skip for now"
+            - properties:
+                declareMqConsumers:
+                  const: "Yes"
+                mqConsumers:
+                  title: MQ Consumers
+                  type: array
+                  description: "One entry per MQ queue this service reads from"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - queueName
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-mq-consumer"
+                      queueName:
+                        title: Queue Name
+                        type: string
+                        ui:placeholder: "e.g. PAYMENTS.INSTRUCTIONS.INBOUND"
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What messages are consumed and what drives it"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareFtpOutbound:
+          oneOf:
+            - properties:
+                declareFtpOutbound:
+                  const: "Skip for now"
+            - properties:
+                declareFtpOutbound:
+                  const: "Yes"
+                ftpOutbound:
+                  title: FTP Outbound
+                  type: array
+                  description: "One entry per FTP path this service deposits files to"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - path
+                      - contentType
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-ftp-outbound"
+                      path:
+                        title: FTP Path
+                        type: string
+                        ui:placeholder: "e.g. /outbound/settlement/{date}"
+                      contentType:
+                        title: Content Type
+                        type: string
+                        enum:
+                          - text/csv
+                          - application/xml
+                          - application/json
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What files are deposited, schedule, who picks them up"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+        declareFtpInbound:
+          oneOf:
+            - properties:
+                declareFtpInbound:
+                  const: "Skip for now"
+            - properties:
+                declareFtpInbound:
+                  const: "Yes"
+                ftpInbound:
+                  title: FTP Inbound
+                  type: array
+                  description: "One entry per FTP path this service reads files from"
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - path
+                      - contentType
+                      - description
+                    properties:
+                      name:
+                        title: API Name
+                        type: string
+                        pattern: "^[a-z][a-z0-9-]+$"
+                        ui:placeholder: "e.g. payments-ftp-inbound"
+                      path:
+                        title: FTP Path
+                        type: string
+                        ui:placeholder: "e.g. /inbound/instructions/{date}"
+                      contentType:
+                        title: Content Type
+                        type: string
+                        enum:
+                          - text/csv
+                          - application/xml
+                          - application/json
+                      description:
+                        title: Description
+                        type: string
+                        ui:placeholder: "What files are read, who deposits them, schedule"
+                        ui:widget: textarea
+                        ui:options:
+                          rows: 2
+
+  steps:
+    - id: trigger_pipeline
+      name: Declare Dependencies
+      action: trigger:harness-custom-pipeline
+      input:
+        pipeline: update_catalog_entry_pipeline
+        payload:
+          componentIdentifier: "{{ parameters.componentIdentifier }}"
+          repoSlug: "{{ parameters.repoSlug }}"
+          sysid: "{{ parameters.sysid }}"
+          systemIdentifier: "{{ parameters.systemIdentifier }}"
+          ownerGroup: "{{ parameters.ownerGroup }}"
+          updateSystem: "No"
+          componentDescription: ""
+          componentConfluenceUrl: ""
+          componentRunbookUrl: ""
+          systemTitle: ""
+          systemDescription: ""
+          systemDomain: ""
+          systemConfluence: ""
+          systemRunbook: ""
+          systemTags: ""
+          systemKubernetesClusters: ""
+          systemDatadogDashboardUrl: ""
+          systemDynatraceDashboardUrl: ""
+          systemOncallTeam: ""
+          systemOncallRotationUrl: ""
+          systemOncallIncidentsUrl: ""
+          systemWizProjectId: ""
+          systemChaosHarnessDashboardUrl: ""
+          systemChaosGamedayRunbookUrl: ""
+          systemRafayProjectName: ""
+          systemRafayProjectDashboardUrl: ""
+          datadogDashboardUrl: ""
+          datadogServiceName: ""
+          dynatraceDashboardUrl: ""
+          dynatraceEntityId: ""
+          sonarqubeProjectKey: ""
+          sonarqubeDashboardUrl: ""
+          qualityCoverageTarget: ""
+          qualityDoraDashboardUrl: ""
+          wizProjectId: ""
+          oncallTeam: ""
+          oncallRotationUrl: ""
+          oncallIncidentsUrl: ""
+          oncallLastIncidentDate: ""
+          dbEngine: ""
+          dbSchema: ""
+          dbDbaRunbookUrl: ""
+          dbLastMigration: ""
+          dbBackupPolicy: ""
+          databases: "{{ parameters.databases | dump if parameters.databases else '[]' }}"
+          caches: "{{ parameters.caches | dump if parameters.caches else '[]' }}"
+          kafkaClusters: "{{ parameters.kafkaClusters | dump if parameters.kafkaClusters else '[]' }}"
+          mqBrokers: "{{ parameters.mqBrokers | dump if parameters.mqBrokers else '[]' }}"
+          ftpServers: "{{ parameters.ftpServers | dump if parameters.ftpServers else '[]' }}"
+          restApis: "{{ parameters.restApis | dump if parameters.restApis else '[]' }}"
+          kafkaProducers: "{{ parameters.kafkaProducers | dump if parameters.kafkaProducers else '[]' }}"
+          kafkaConsumers: "{{ parameters.kafkaConsumers | dump if parameters.kafkaConsumers else '[]' }}"
+          mqProducers: "{{ parameters.mqProducers | dump if parameters.mqProducers else '[]' }}"
+          mqConsumers: "{{ parameters.mqConsumers | dump if parameters.mqConsumers else '[]' }}"
+          ftpOutbound: "{{ parameters.ftpOutbound | dump if parameters.ftpOutbound else '[]' }}"
+          ftpInbound: "{{ parameters.ftpInbound | dump if parameters.ftpInbound else '[]' }}"
+          kubernetesWorkloads: "{{ parameters.kubernetesWorkloads | dump if parameters.kubernetesWorkloads else '[]' }}"
+          requestorName: "${{ user.entity.metadata.name }}"
+          requestorEmail: "${{ user.entity.spec.profile.email or user.entity.metadata.name }}"
+
+  output:
+    text:
+      title: Dependencies Submitted
+      content: >
+        Your dependency declarations have been submitted. The pipeline will
+        update catalog-info.yaml and register entities in IDP within a few minutes.
+        The blast radius validator runs nightly and will confirm all declared
+        dependencies match SBOM signals.
+      summary:
+        component: "{{ parameters.componentIdentifier }}"
+        requestor: "${{ user.entity.metadata.name }}"
+    links:
+      - title: View Pipeline Execution
+        url: "https://app.harness.io/ng/account/{{ parameters.accountId }}/module/idp-admin/orgs/default/projects/xxx-IDP-project/pipelines/update_catalog_entry_pipeline/executions"

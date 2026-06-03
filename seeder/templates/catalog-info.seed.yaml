@@ -79,12 +79,26 @@ metadata:
     #      - Scale: new service onboarded to K8s in minutes via IDP, not a 2-week infra ticket
     # ── TO ACTIVATE: IDP Admin → Plugins → Rafay Kubernetes Ops Platform → Enable
     #      Configure Rafay API endpoint + organisation credentials in IDP admin settings
-    #      Then uncomment the annotation below — plugin wires up automatically
+    #      Then uncomment the annotations below — plugin wires up automatically
     # rafay.dev/project-name: {{PLATFORM_IDENTIFIER}}
+    # rafay.dev/project-dashboard-url: ""    # Rafay console URL for this project
+    # ── Auto-written by Rafay sync pipeline ─────────────────────────────────
+    #   rafay.dev/cluster-count     # e.g. "3" — clusters registered under this project
+    #   rafay.dev/namespace-count   # e.g. "24" — total namespaces across all clusters
+    #   rafay.dev/last-sync         # e.g. "2026-06-01T06:00:00Z" — last fleet sync timestamp
 
     # Wiz — platform-level cloud security posture (aggregate view across all services in this system)
     # Use a Wiz project that encompasses all cloud resources belonging to this platform
     # wiz.io/project-id: ""                  # Wiz project ID — platform-scoped, broader than component-level
+
+    # Chaos Engineering — Harness Chaos Engineering (system-level resilience view)
+    # chaos.harness.io/project-id scopes all experiments to this platform's HCE project
+    # chaos.harness.io/dashboard-url: "https://app.harness.io/ng/account/{{ACCOUNT_ID}}/chaos/projects/<hce-project-id>/experiments"
+    # chaos.harness.io/gameday-runbook-url: ""    # Confluence/runbook link for game days
+    # ── Auto-written nightly by the chaos pipeline ──────────────────────────
+    #   chaos.harness.io/resilience-score     # e.g. "87" — aggregate score across all services
+    #   chaos.harness.io/experiment-count     # e.g. "12" — number of configured experiments
+    #   chaos.harness.io/last-run-date        # e.g. "2026-06-01" — date of most recent run
 
     # On-call — platform-level on-call (who owns the system, not individual components)
     # oncall/team: {{TEAM_IDENTIFIER}}
