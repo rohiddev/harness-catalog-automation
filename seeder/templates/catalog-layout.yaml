@@ -3,7 +3,7 @@
 # Applies to: kind: Component, type: service
 #
 # Tabs:
-#   Overview | CI/CD | Code Quality | Security Scan | Wiz | Kubernetes |
+#   Overview | CI/CD | Code Quality | Security | Wiz | Kubernetes |
 #   Observability | Cloud Cost | On-call / Incidents | Blast Radius | Database | Docs
 #
 # Annotations reference: seeder/templates/catalog-info.seed.yaml
@@ -79,27 +79,21 @@ page:
                 type: link
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Security Scan — scan results, quality gate, last scan date
+    # Security — live code quality + dependency vulnerability side by side
+    # Left:  SonarQube — quality gate, coverage, SAST (requires sonarqube.org/project-key)
+    # Right: Snyk — dependency CVEs, container vulnerabilities (requires snyk.io/org-name)
+    # Plugins: EntitySonarQubeCard (SonarQube plugin), EntitySnykContent (Snyk plugin)
     # ─────────────────────────────────────────────────────────────────────────
-    - name: Security Scan
-      path: /security-scan
-      title: Security Scan
+    - name: Security
+      path: /security
+      title: Security
       contents:
-        - component: EntityAdditionalInfoCard
+        - component: EntitySonarQubeCard
           gridProps:
             md: 6
-          specs:
-            title: Scan Results
-            items:
-              - label: Quality Gate
-                value: <+metadata.annotations["security-scan/quality-gate"]>
-                type: text
-              - label: Vulnerability Count
-                value: <+metadata.annotations["security-scan/vulnerability-count"]>
-                type: text
-              - label: Last Scan
-                value: <+metadata.annotations["security-scan/last-scan-date"]>
-                type: text
+        - component: EntitySnykContent
+          gridProps:
+            md: 6
 
     # ─────────────────────────────────────────────────────────────────────────
     # Wiz — cloud security posture, issue severity and trend charts

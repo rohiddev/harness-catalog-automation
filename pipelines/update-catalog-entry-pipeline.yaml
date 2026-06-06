@@ -221,6 +221,14 @@ pipeline:
       type: String
       description: "Wiz project ID — activates cloud security posture cards"
       value: <+trigger.payload.wizProjectId>
+    - name: snykOrgName
+      type: String
+      description: "Snyk organisation name — activates Security tab vulnerability view"
+      value: <+trigger.payload.snykOrgName>
+    - name: snykProjectIds
+      type: String
+      description: "Comma-separated Snyk project IDs for this service"
+      value: <+trigger.payload.snykProjectIds>
     - name: systemWizProjectId
       type: String
       description: "Platform-scoped Wiz project ID for System entity"
@@ -435,6 +443,8 @@ pipeline:
                           DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SNYK_ORG_NAME="<+pipeline.variables.snykOrgName>" \
+                          SNYK_PROJECT_IDS="<+pipeline.variables.snykProjectIds>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
                           SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
                           SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \
@@ -555,6 +565,8 @@ pipeline:
                           DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SNYK_ORG_NAME="<+pipeline.variables.snykOrgName>" \
+                          SNYK_PROJECT_IDS="<+pipeline.variables.snykProjectIds>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
                           SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
                           SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \
@@ -675,6 +687,8 @@ pipeline:
                           DB_BACKUP_POLICY="<+pipeline.variables.dbBackupPolicy>" \
                           KUBERNETES_WORKLOADS='<+pipeline.variables.kubernetesWorkloads>' \
                           WIZ_PROJECT_ID="<+pipeline.variables.wizProjectId>" \
+                          SNYK_ORG_NAME="<+pipeline.variables.snykOrgName>" \
+                          SNYK_PROJECT_IDS="<+pipeline.variables.snykProjectIds>" \
                           SYSTEM_WIZ_PROJECT_ID="<+pipeline.variables.systemWizProjectId>" \
                           SYSTEM_CHAOS_HARNESS_DASHBOARD_URL="<+pipeline.variables.systemChaosHarnessDashboardUrl>" \
                           SYSTEM_CHAOS_GAMEDAY_RUNBOOK_URL="<+pipeline.variables.systemChaosGamedayRunbookUrl>" \

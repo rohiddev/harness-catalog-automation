@@ -248,6 +248,16 @@ spec:
           type: string
           description: "Activates cloud security posture cards on this service's catalog page"
           ui:placeholder: "Wiz Project ID — find in Wiz console → Projects"
+        snykOrgName:
+          title: Snyk Organisation Name
+          type: string
+          description: "Activates live dependency and container vulnerability view on the Security tab"
+          ui:placeholder: "Snyk org name — find in Snyk console → Settings"
+        snykProjectIds:
+          title: Snyk Project IDs
+          type: string
+          description: "Comma-separated Snyk project IDs for this service"
+          ui:placeholder: "e.g. abc123,def456"
 
     # ── Page 5: On-call & Database ───────────────────────────────────────────
     - title: On-call & Database
@@ -360,6 +370,8 @@ spec:
           qualityCoverageTarget: "{{ parameters.qualityCoverageTarget or '' }}"
           qualityDoraDashboardUrl: "{{ parameters.qualityDoraDashboardUrl or '' }}"
           wizProjectId: "{{ parameters.wizProjectId or '' }}"
+          snykOrgName: "{{ parameters.snykOrgName or '' }}"
+          snykProjectIds: "{{ parameters.snykProjectIds or '' }}"
           oncallTeam: "{{ parameters.oncallTeam or '' }}"
           oncallRotationUrl: "{{ parameters.oncallRotationUrl or '' }}"
           oncallIncidentsUrl: "{{ parameters.oncallIncidentsUrl or '' }}"

@@ -178,11 +178,18 @@ metadata:
     # dynatrace.com/dashboard-url: https://company.live.dynatrace.com/#dashboard;id=<id>
     # dynatrace.com/entity-id: SERVICE-<id>
 
-    # Code Quality — SonarQube plugin (activates plugin card on entity page)
+    # Code Quality — SonarQube plugin (activates EntitySonarQubeCard on Security tab)
     # sonarqube.org/project-key: {{SERVICE_NAME}}
     # sonarqube.org/dashboard-url: https://sonarqube.company.com/dashboard?id={{SERVICE_NAME}}
     # quality/coverage-target: "80"
     # quality/dora-dashboard-url: ""
+
+    # Snyk — dependency + container vulnerability scanning (activates EntitySnykContent on Security tab)
+    # ── TO ACTIVATE: IDP Admin → Plugins → Snyk → Enable
+    #      Configure Snyk API token in IDP admin settings
+    # snyk.io/org-name: ""          # Snyk organisation name — find in Snyk console → Settings
+    # snyk.io/project-ids: ""       # Comma-separated Snyk project IDs for this service
+    # snyk.io/target-id: ""         # Optional — Snyk target ID (repo-level grouping)
 
     # Harness SEI — DORA metrics (deployment frequency, lead time, MTTR, change failure rate)
     # Uncomment and set project ID once SEI plugin is enabled in IDP Admin → Plugins

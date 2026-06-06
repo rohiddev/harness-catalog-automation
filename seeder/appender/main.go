@@ -191,6 +191,8 @@ func updateComponent(e *Entity) {
 	setAnno(e, "dynatrace.com/dashboard-url", env("DYNATRACE_DASHBOARD_URL", ""))
 	setAnno(e, "dynatrace.com/entity-id", env("DYNATRACE_ENTITY_ID", ""))
 	setAnno(e, "wiz.io/project-id", env("WIZ_PROJECT_ID", ""))
+	setAnno(e, "snyk.io/org-name", env("SNYK_ORG_NAME", ""))
+	setAnno(e, "snyk.io/project-ids", env("SNYK_PROJECT_IDS", ""))
 	setAnno(e, "sonarqube.org/project-key", env("SONARQUBE_PROJECT_KEY", ""))
 	setAnno(e, "sonarqube.org/dashboard-url", env("SONARQUBE_DASHBOARD_URL", ""))
 	setAnno(e, "quality/coverage-target", env("QUALITY_COVERAGE_TARGET", ""))
